@@ -201,11 +201,11 @@ export default function RegistrationForm() {
               <button
                 type="button"
                 className={`${styles.userType_button} ${
-                  userData.userType === "client" ? styles.selected : ""
+                  userData.userType === "employer" ? styles.selected : ""
                 }`}
-                onClick={() => handleUserTypeSelect("client")}
+                onClick={() => handleUserTypeSelect("employer")}
               >
-                Client
+                Employer
               </button>
               <button
                 type="button"
@@ -326,7 +326,7 @@ export default function RegistrationForm() {
         <div className={styles.parent_cont_right}>
           <div>
             <h1 className={styles.h1}>GigChain</h1>
-            <p className={styles.p}>It belongs to you.</p>
+            <p className={styles.p}>Feel the Freedom & Control</p>
             <div className={styles.signIn_link_container}>
               <Link to="/signIn" className={styles.signIn_link}>
                 Already a GigChain user? Sign In
@@ -349,13 +349,7 @@ export default function RegistrationForm() {
             }}
             className={styles.main_content_container}
           >
-            <h1 className={styles.h3}>GigChain</h1>
-
-            <div>
-              <h4 className={styles.welcome_text}>
-                Hi, Start your GigChain Journey Now
-              </h4>
-
+            <div className={styles.stepContainer}>
               <h2 className={styles.h4}>Register - Step {step} of 3</h2>
             </div>
             <div className={styles.input_container}>{renderStep()}</div>

@@ -28,7 +28,8 @@ function Sidebar({
           : "No messages yet";
 
         const otherUser = convo.participants.find(
-          (participant) => participant._id !== currentUser.id
+          (participant) =>
+            participant._id !== (currentUser?._id || currentUser?.id)
         );
 
         console.log("Other User in Sidebar Component: ", otherUser);

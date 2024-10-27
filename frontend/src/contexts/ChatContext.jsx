@@ -83,11 +83,19 @@ export const ChatProvider = ({ children }) => {
   };
 
   const handleSendMessage = async (text) => {
-    console.log("Sending message...", text, currentUser.id, activeConversation);
+    console.log("Current user in handleSendMessage: ", currentUser);
+    console.log(
+      "Sending message...",
+      text,
+      currentUser._id,
+      activeConversation
+    );
+    const currentUserId = currentUser?._id || currentUser?.id;
+
     if (activeConversation) {
       const message = {
         conversationId: activeConversation,
-        sender: currentUser.id,
+        sender: currentUserId,
         text: text,
       };
 
@@ -138,10 +146,13 @@ export const ChatProvider = ({ children }) => {
     deadline
   ) => {
     console.log("Sending message...", text, currentUser.id, conversationId);
+
+    const currentUserId = currentUser?._id || currentUser?.id;
+
     if (conversationId) {
       const message = {
         conversationId: conversationId,
-        sender: currentUser.id,
+        sender: currentUserId,
         text: text,
         proposal: {
           budget: budget,
@@ -255,6 +266,7 @@ export const ChatProvider = ({ children }) => {
         currentUser,
         handleSelectConversation,
         handleSendMessage,
+        fetchConversations,
         handleSendProposalMessage,
         handleProposalChanges,
         handleUserSelect,

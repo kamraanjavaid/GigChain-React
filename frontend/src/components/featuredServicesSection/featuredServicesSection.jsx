@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ServiceCard from "../featuredGigCard/featuredGigCard";
+import ServiceCard from "../serviceCard/serviceCard";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -46,11 +46,11 @@ function FeaturedServicesSection({ serviceType }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchGigsByCategory(category) {
+    async function fetchServicesByCategory(category) {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/gig/category/${category}`
+          `${import.meta.env.VITE_API_URL}/api/service/category/${category}`
         );
         setServices(response.data);
       } catch (error) {
@@ -60,7 +60,7 @@ function FeaturedServicesSection({ serviceType }) {
       // setLoading(false);
     }
 
-    fetchGigsByCategory(serviceType);
+    fetchServicesByCategory(serviceType);
   }, [serviceType]);
 
 

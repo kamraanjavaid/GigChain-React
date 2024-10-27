@@ -22,17 +22,30 @@ function ServiceCard({ service }) {
   }, [service._id]);
 
   return (
-    <Link to={`/service/${service.id}`}>
+    <Link to={`/service/${service._id}`}>
       <div className={styles.service_card}>
         <img
           className={styles.thumbnailImage}
           width={400}
-          height={200}
-          src={service.images[0] || service.thumbnailUrl}
+          height={150}
+          src={service.images[0]}
           alt={service.category}
         />
         <div className={styles.cardDetails}>
           <h3 className={styles.serviceTitle}>{service.title}</h3>
+
+          <div className={styles.providerDetails}>
+            <img
+              className={styles.providerImage}
+              width={40}
+              height={40}
+              src={service.providerProfilePicture}
+              alt={service.serviceProvider}
+            />
+
+            <p>{service.serviceProvider}</p>
+          </div>
+
           <p>
             ⭐ {service.rating} ({service.numReviews})
           </p>
@@ -46,7 +59,7 @@ export default ServiceCard;
 
 ServiceCard.propTypes = {
   service: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
     category: PropTypes.string.isRequired,
     images: PropTypes.arrayOf(PropTypes.string).isRequired,
     thumbnailUrl: PropTypes.string,

@@ -49,13 +49,37 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/check-conversation/:userId", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const conversation = await Conversation.exists({
+      participants: { $in: [userId] },
+    });
+
+    res.json({
+      exists: !!conversation,
+    });
+  } catch (error) {
+    console.error("Error checking conversation:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
 router.get("/:conversationId", authMiddleware, async (req, res) => {
   try {
+
     const conversationId = req.params.conversationId;
     const conversation = await Conversation.findById(conversationId)
       .populate({
         path: "serviceId",
         select: "title",
+      })
+      .populate({
+        path: "participants",
+        select: "firstName lastName profilePictureUrl",
       })
       .exec();
     res.json(conversation);
@@ -84,6 +108,7 @@ router.post("/", authMiddleware, async (req, res) => {
       deadline: deadline,
     });
     await proposal.save();
+
     res.status(201).json(conversation);
   } catch (error) {
     console.error("Error creating conversation:", error);

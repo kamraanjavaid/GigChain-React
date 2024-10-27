@@ -1,17 +1,20 @@
+@use "../../../../styles/base" as base;
+
 .container {
   display: flex;
   max-width: 1366px;
   // margin: 50px 0;
   padding: 50px 50px;
   gap: 50px;
-  background-color: #ffffff;
+  background-color: base.$background;
   font-family: "Inter";
 }
 
 .leftColumn {
   flex: 2;
   // padding: 20px;
-  background-color: #f1f1f1;
+  background-color: base.$white;
+  border-radius: 5px;
   // height: 2000px;
 }
 
@@ -20,11 +23,11 @@
   height: 600px;
   border-radius: 5px;
   padding: 20px;
-  background-color: #f1f1f1;
+  background-color: base.$white;
 }
 
 .header {
-  background-color: #f1f1f1;
+  background-color: base.$white;
   color: #000000;
   border-radius: 5px;
   // width: 800px;
@@ -50,8 +53,8 @@
     display: flex;
     width: 100px;
     height: 50px;
-    background-color: #330a4d;
-    color: #ffffff;
+    background-color: base.$primary;
+    color: base.$white;
     border-radius: 5px 0 0 5px;
     flex-direction: row;
     align-items: center;
@@ -63,8 +66,8 @@
     display: flex;
     width: 100px;
     height: 50px;
-    background-color: #330a4d;
-    color: #ffffff;
+    background-color: base.$primary;
+    color: base.$white;
     border-radius: 5px 0 0 5px;
     flex-direction: row;
     align-items: center;
@@ -100,7 +103,7 @@
   width: 40%;
   border-radius: 5px;
   height: 200px;
-  background-color: #330a4d;
+  background-color: base.$primary;
 
   img {
     width: 100%;
@@ -150,7 +153,7 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background-color: #330a4d;
+        background-color: base.$primary;
 
         .profilePic {
           width: 100%;
@@ -286,15 +289,15 @@
 .sendButton {
   width: 100%;
   padding: 10px;
-  background-color: #330a4d;
-  color: white;
+  background-color: base.$primary;
+  color: base.$white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
 
   &:hover {
-    background-color: darken(#330a4d, 10%);
+    background-color: darken(base.$primary, 10%);
   }
 }
 

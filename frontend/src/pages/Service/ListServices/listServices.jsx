@@ -69,7 +69,7 @@ const ListServices = () => {
       ) : (
         <table className={styles.servicesTable}>
           <thead>
-            <tr>
+            <tr className={styles.tableHeader}>
               <th>Thumbnail</th>
               <th>Title</th>
               <th>Impressions</th>
@@ -79,17 +79,17 @@ const ListServices = () => {
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={styles.tableBody}>
             {userServices.map((service) => (
               <tr key={service._id}>
-                <td>
+                <td className={styles.thumbnailTableCell}>
                   <img
                     src={service.images[0] || service.thumbnailUrl}
                     alt={service.title}
                     className={styles.thumbnail}
                   />
                 </td>
-                <td>{service.title}</td>
+                <td className={styles.title}>{service.title}</td>
                 <td>{service.impressions || 0}</td>
                 <td>{service.clicks || 0}</td>
                 <td>{service.conversions || 0}</td>

@@ -27,7 +27,8 @@ export default function SignInPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Loggin in with:", userData);
+    console.log("Logging in with:", userData);
+
     try {
       console.log(
         "Sending request to:",
@@ -42,11 +43,41 @@ export default function SignInPage() {
       login({ token, user });
       localStorage.setItem("token", token);
 
-      navigate("/");
+      const userId = user._id || user.id;
+
+      const conversationCheckRes = await axios.get(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/conversations/check-conversation/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Conversation check response:", conversationCheckRes.data);
+      const hasConversations = conversationCheckRes.data.exists;
+
+      if (user.userType === "freelancer") {
+        console.log("User type: freelancer");
+        if (hasConversations) {
+          navigate("/inbox");
+        } else {
+          navigate("/services");
+        }
+      } else if (user.userType === "employer") {
+        if (hasConversations) {
+          navigate("/inbox");
+        } else {
+          navigate("/services_directory");
+        }
+      }
     } catch (err) {
-      if (err.data.msg === "Incorrect email") {
+      console.error("Error:", err);
+      if (err.response?.data?.msg === "Incorrect email") {
         setErrorStatus({ email: true, password: false });
-      } else if (err.data.msg === "Incorrect password") {
+      } else if (err.response?.data?.msg === "Incorrect password") {
         setErrorStatus({ email: false, password: true });
       } else {
         alert("Error signing in");
@@ -70,8 +101,6 @@ export default function SignInPage() {
             onSubmit={handleSubmit}
             className={styles.main_content_container}
           >
-            <h1 className={styles.h3}>GigChain</h1>
-
             <div>
               <h4 className={styles.h4}>Login Now</h4>
             </div>
@@ -128,7 +157,7 @@ export default function SignInPage() {
         <div className={styles.parent_cont_right}>
           <div>
             <h1 className={styles.h1}>GigChain</h1>
-            <p className={styles.p}>It belongs to you.</p>
+            <p className={styles.p}>Feel the Freedom & Control</p>
           </div>
         </div>
       </div>

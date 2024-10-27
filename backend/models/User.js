@@ -5,37 +5,26 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    userType: { type: String, required: true },
+    userType: {
+      type: String,
+      enum: ["freelancer", "employer"],
+      required: true,
+    },
     email: { type: String, unique: true },
     password: { type: String, required: false },
-    profilePictureUrl: { type: String, required: true },
-    coverPictureUrl: { type: String, required: true },
+    profilePictureUrl: { type: String, required: false },
 
     location: {
       city: {
         type: String,
-        
       },
       country: {
         type: String,
       },
     },
 
-    expertise: {
-      type: String,
-      default: "",
-    },
-    languages: {
-      type: [String],
-      default: [],
-    },
-    about: {
-      type: String,
-      default: "",
-    },
     verificationCode: String,
     verificationCodeExpires: Date,
-    isVerified: { type: Boolean, default: false },
   },
   {
     timestamps: true,

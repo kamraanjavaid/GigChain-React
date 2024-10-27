@@ -7,8 +7,8 @@ const ProposalSchema = new mongoose.Schema(
       ref: "Conversation",
       required: true,
     },
-    budget: { type: Number, required: true },
-    deadline: { type: Date, required: true },
+    budget: { type: Number },
+    deadline: { type: Date },
     status: {
       type: String,
       enum: ["pending", "accepted", "rejected"],

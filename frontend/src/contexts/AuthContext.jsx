@@ -64,14 +64,14 @@ export const AuthProvider = ({ children }) => {
               },
             }
           );
-          // console.log("Response from fetchUser:", response);
+          console.log("Response from fetchUser:", response);
           // console.log("Response status:", response.status);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           const data = await response.json();
-          // console.log("Data from fetchUser:", data.user);
+          console.log("Data from fetchUser:", data.user);
           setCurrentUser(data.user);
         } catch (error) {
           console.log("Failed to fetch user:", error);

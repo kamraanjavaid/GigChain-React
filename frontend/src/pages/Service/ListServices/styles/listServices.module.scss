@@ -3,6 +3,7 @@
 .servicesListContainer {
   padding: 20px 50px;
   min-height: 70vh;
+  background-color: base.$background;
 }
 
 .header {
@@ -24,23 +25,41 @@
 .servicesTable {
   width: 100%;
   border-collapse: collapse;
-}
+  border-radius: 5px;
 
+  .tableHeader {
+    background-color: base.$background-dark;
+    border-radius: 5px !important;
+  }
+
+  .tableBody {
+    border-radius: 5px;
+    background-color: base.$white;
+  }
+}
+.title {
+  text-align: left !important;
+}
 .servicesTable th,
 .servicesTable td {
-  border: 1px solid #ddd;
+  // border: 1px solid #ddd;
   padding: 12px;
-  text-align: left;
+  text-align: center;
+}
+
+.thumbnailTableCell {
+  padding: 0 !important;
+  width: 200px;
 }
 
 .servicesTable th {
-  background-color: #f2f2f2;
+  background-color: base.$background-secondary;
   font-weight: bold;
 }
 
 .thumbnail {
-  width: 100px;
-  height: 50px;
+  width: 100%;
+  height: 100px;
   object-fit: cover;
 }
 

@@ -71,6 +71,16 @@ io.on("connection", (socket) => {
         conversationId
       );
 
+      // if budget and deadline are not provided, use the previous values
+      const previousProposal = await Proposal.findOne({ conversationId });
+     
+      if (!budget) {
+        budget = previousProposal.budget;
+      }
+      if (!deadline) {
+        deadline = previousProposal.deadline;
+      }
+
       try {
         const updatedProposal = await Proposal.findOneAndUpdate(
           { conversationId },

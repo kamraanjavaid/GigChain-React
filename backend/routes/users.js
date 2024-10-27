@@ -89,6 +89,7 @@ router.post("/register", async (req, res) => {
     const ip = req.ip;
 
     console.log("IP in register route:", ip);
+    console.log("IP in register route:", req.socket.remoteAddress);
 
     const locationResponse = await axios.get(`https://ipapi.co/${ip}/json/`);
     const locationData = locationResponse.data;
@@ -199,7 +200,7 @@ router.post("/register-google", async (req, res) => {
   try {
     const { tokenId, userType } = req.body;
 
-    if (!userType || !["client", "freelancer"].includes(userType)) {
+    if (!userType || !["employer", "freelancer"].includes(userType)) {
       return res.status(400).json({ error: "Invalid or missing userType" });
     }
 
@@ -212,51 +213,55 @@ router.post("/register-google", async (req, res) => {
     const { given_name, family_name, email, picture } = googlePayload;
 
     let user = await User.findOne({ email });
-    if (user) {
-      if (!user.userType) {
-        user.userType = userType;
-        await user.save();
+
+    const generateToken = (user) => {
+      try {
+        const payload = {
+          user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            userType: user.userType,
+            profilePictureUrl: user.profilePictureUrl,
+          },
+        };
+
+        jwt.sign(
+          payload,
+          process.env.JWT_SECRET,
+          { expiresIn: 360000 },
+          (err, token) => {
+            if (err) {
+              console.error("Error in JWT signing:", err);
+              throw err;
+            }
+            console.log("JWT token generated successfully");
+            console.log("Sending response to client");
+            res.json({ token, user: payload.user });
+          }
+        );
+      } catch (err) {
+        console.error("Error in JWT signing:", err);
+        res.status(500).json({ msg: "Server error during authentication" });
       }
+    };
 
-      const token = generateToken(user);
-      return res.status(200).json({
-        msg: "User logged in successfully with Google",
-        token,
-        user: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          userType: user.userType,
-          profilePictureUrl: user.profilePictureUrl,
-        },
+    if (user) {
+      generateToken(user);
+    } else {
+      user = new User({
+        firstName: given_name,
+        lastName: family_name,
+        email,
+        userType,
+        profilePictureUrl: picture || defaultAvatar,
+        isVerified: true,
       });
+
+      await user.save();
+      generateToken(user);
     }
-
-    user = new User({
-      firstName: given_name,
-      lastName: family_name,
-      email,
-      userType,
-      profilePictureUrl: picture || defaultAvatar,
-      coverPictureUrl: defaultCover,
-      isVerified: true,
-    });
-    await user.save();
-
-    const token = generateToken(user);
-    res.status(201).json({
-      msg: "User registered successfully with Google",
-      token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        userType: user.userType,
-        profilePictureUrl: user.profilePictureUrl,
-      },
-    });
   } catch (error) {
     console.error(
       "Error registering with Google",

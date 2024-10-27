@@ -44,7 +44,7 @@ const CurrentUserProfile = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/users/${
-            currentUser.id
+            currentUser._id
           }/profile-picture`
         );
         setProfilePicture(response.data.profilePictureUrl);
@@ -60,7 +60,7 @@ const CurrentUserProfile = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/users/${
-            currentUser.id
+            currentUser._id
           }/cover-picture`
         );
         setCoverPicture(response.data.coverPictureUrl);
@@ -183,7 +183,7 @@ const CurrentUserProfile = () => {
         <div className={styles.mainProfileContainer}>
           <div className={styles.profilePictureContainer}>
             <img
-              src={profilePicture}
+              src={currentUser.profilePictureUrl}
               alt="Profile Picture"
               className={styles.profilePicture}
             />

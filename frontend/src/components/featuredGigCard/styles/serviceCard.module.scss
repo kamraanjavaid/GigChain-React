@@ -3,7 +3,7 @@
 .service_card {
   display: flex;
   flex-direction: column;
-  // background-color: base.$primary;
+  background-color: base.$white;
   width: 400px;
   // border-radius: 10px;
   height: 320px;
@@ -22,7 +22,7 @@
     grid-template-columns: 3fr 1fr;
     grid-template-rows: 1fr 1fr;
     padding: 20px 20px;
-    background-color: base.$background_light;
+    background-color: base.$white;
     border-radius: 0 0 5px 5px;
 
     h3 {

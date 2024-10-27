@@ -36,6 +36,8 @@ const ViewServiceDetails = () => {
   const [deadline, setDeadline] = useState();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const currentUserId = currentUser?._id || currentUser?.id;
+
   useEffect(() => {
     const recordClick = async () => {
       try {
@@ -105,7 +107,7 @@ const ViewServiceDetails = () => {
       let conversationId;
       const conversationExists = await checkConversationExists(
         serviceDetails.user,
-        currentUser.id
+        currentUserId
       );
 
       console.log("Conversation exists: ", conversationExists);

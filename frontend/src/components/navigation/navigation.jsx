@@ -122,11 +122,8 @@ export default function Navigation() {
                   onClick={toggleAvatarMenu}
                 >
                   <img
-                    src={
-                      currentUser.profilePictureUrl ||
-                      "https://via.placeholder.com/80"
-                    }
-                    alt="User Avatar"
+                    src={currentUser.profilePictureUrl}
+                    alt={currentUser.firstName}
                     className={styles.avatar_image}
                   />
                 </button>
