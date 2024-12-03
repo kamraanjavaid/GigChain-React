@@ -22,6 +22,7 @@ import CreateService from "./pages/Service/CreateNewService/createNewService";
 import Navigation from "../src/components/navigation/navigation";
 import Footer from "../src/components/footer/footer";
 import "./App.css";
+import { ChatProvider } from "./contexts/ChatContext";
 
 function AppContent() {
   const location = useLocation();
@@ -84,7 +85,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <ChatProvider>
+          <AppContent />
+        </ChatProvider>
       </AuthProvider>
     </Router>
   );

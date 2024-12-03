@@ -70,7 +70,6 @@ router.get("/check-conversation/:userId", authMiddleware, async (req, res) => {
 
 router.get("/:conversationId", authMiddleware, async (req, res) => {
   try {
-
     const conversationId = req.params.conversationId;
     const conversation = await Conversation.findById(conversationId)
       .populate({
@@ -92,7 +91,6 @@ router.get("/:conversationId", authMiddleware, async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { participant, serviceId } = req.body;
-    // console.log("User ID coming from conversations api route: ", req.user);
 
     const conversation = new Conversation({
       participants: [req.user._id, participant],
@@ -100,14 +98,24 @@ router.post("/", authMiddleware, async (req, res) => {
     });
     await conversation.save();
 
-    const { budget, deadline } = req.body.proposal;
+    const { messageText, budget, deadline } = req.body.proposal;
 
     const proposal = new Proposal({
       conversationId: conversation._id,
+      messageText: messageText,
       budget: budget,
       deadline: deadline,
     });
     await proposal.save();
+
+    const message = new Message({
+      conversationId: conversation._id,
+      sender: req.user._id,
+      content: messageText,
+      messageType: "proposal",
+    });
+    
+    await message.save();
 
     res.status(201).json(conversation);
   } catch (error) {

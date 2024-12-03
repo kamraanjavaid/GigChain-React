@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   gap: 50px;
-  background-color: base.$white;
+  // background-color: base.$white;
+  background: linear-gradient(120deg, #0b047c, #2b0046, #0b047c);
   border-bottom: 1px solid base.$background_light;
 
   .headings_container {
@@ -20,12 +21,12 @@
 
     h5 {
       font: base.$h5;
-      color: base.$black;
+      color: base.$white;
     }
 
     h1 {
       font: base.$h1xx;
-      color: base.$black;
+      color: base.$white;
     }
   }
 

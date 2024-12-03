@@ -102,45 +102,47 @@ export default function SignInPage() {
             className={styles.main_content_container}
           >
             <div>
+              <p className={styles.welcome_back}>Welcome back</p>
               <h4 className={styles.h4}>Login Now</h4>
             </div>
+            <div className={styles.input_container_wrapper}>
+              <div className={styles.input_container}>
+                <input
+                  className={` ${styles.input} ${
+                    errorStatus.email ? styles.input_error : ""
+                  }`}
+                  type="text"
+                  placeholder="Email"
+                  name="email"
+                  onChange={handleChange}
+                />
+                <input
+                  className={` ${styles.input} ${
+                    errorStatus.password ? styles.input_error : ""
+                  }`}
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className={styles.input_container}>
-              <input
-                className={` ${styles.input} ${
-                  errorStatus.email ? styles.input_error : ""
-                }`}
-                type="text"
-                placeholder="Email"
-                name="email"
-                onChange={handleChange}
-              />
-              <input
-                className={` ${styles.input} ${
-                  errorStatus.password ? styles.input_error : ""
-                }`}
-                type="password"
-                placeholder="Password"
-                name="password"
-                onChange={handleChange}
-              />
-            </div>
+              <div className={styles.misc_fields}>
+                <label className={styles.custom_checkbox} htmlFor="rememberMe">
+                  <input type="checkbox" id="rememberMe" />
+                  <span className={styles.checkbox_label}>Remember Me</span>
+                </label>
 
-            <div className={styles.misc_fields}>
-              <label className={styles.custom_checkbox} htmlFor="rememberMe">
-                <input type="checkbox" id="rememberMe" />
-                <span className={styles.checkbox_label}>Remember Me</span>
-              </label>
+                <a className={styles.forgetPassLink} href="/forgetPassword">
+                  Forgot password?
+                </a>
+              </div>
 
-              <a className={styles.forgetPassLink} href="/forgetPassword">
-                Forgot password?
-              </a>
-            </div>
-
-            <div>
-              <button type="submit" className={styles.button_primary}>
-                Login
-              </button>
+              <div>
+                <button type="submit" className={styles.button_primary}>
+                  Login
+                </button>
+              </div>
             </div>
 
             <div className={styles.or_container}>

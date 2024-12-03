@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useRef } from "react";
+import { createContext, useState, useEffect, useRef, useCallback } from "react";
 import io from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
@@ -8,6 +8,7 @@ export const ChatProvider = ({ children }) => {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [unReadCount, setUnReadCount] = useState(0);
 
   const { currentUser } = useAuth();
 
@@ -22,6 +23,10 @@ export const ChatProvider = ({ children }) => {
 
     socket.current.on("new message", (message) => {
       console.log("Received new message: ", message);
+      if (message.conversationId !== activeConversation) {
+        setUnReadCount((prevCount) => prevCount + 1);
+        console.log("Unread count updated: ", unReadCount);
+      }
       setConversations((prevConversations) => {
         return prevConversations.map((convo) => {
           if (convo.id === message.conversationId) {
@@ -60,7 +65,42 @@ export const ChatProvider = ({ children }) => {
     };
   }, [activeConversation, currentUser]);
 
-  const fetchConversations = async () => {
+  useEffect(() => {
+    setUnReadCount(0);
+  }, [activeConversation]);
+
+  const setInitialActiveConversation = (conversationId) => {
+    setActiveConversation(conversationId);
+  };
+
+  const handleNegotiation = async (negotiationData) => {
+    const currentUserId = currentUser?._id || currentUser?.id;
+
+    if (activeConversation) {
+      return new Promise((resolve, reject) => {
+        socket.current.emit(
+          "negotiation-update",
+          {
+            ...negotiationData,
+            sender: currentUserId,
+
+            conversationId: activeConversation,
+          },
+          (response) => {
+            if (response?.success) {
+              console.log("Negotiation updated successfully:", response.data);
+              resolve(response.data);
+            } else {
+              console.error("Failed to update negotiation:", response?.error);
+              reject(response?.error);
+            }
+          }
+        );
+      });
+    }
+  };
+
+  const fetchConversations = useCallback(async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/conversations`,
@@ -75,7 +115,7 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }
-  };
+  }, []);
 
   const handleSelectConversation = (id) => {
     console.log("Selected conversation:", id);
@@ -110,8 +150,6 @@ export const ChatProvider = ({ children }) => {
           }
         });
       });
-
-      // socket.current.emit("send-message", message);
     } else {
       console.error("No active conversation found");
     }
@@ -145,9 +183,8 @@ export const ChatProvider = ({ children }) => {
     budget,
     deadline
   ) => {
-    console.log("Sending message...", text, currentUser.id, conversationId);
-
     const currentUserId = currentUser?._id || currentUser?.id;
+    console.log("Sending message...", text, currentUserId, conversationId);
 
     if (conversationId) {
       const message = {
@@ -263,13 +300,17 @@ export const ChatProvider = ({ children }) => {
         setActiveConversation,
         checkConversationExists,
         messages,
+        unReadCount,
+        setUnReadCount,
         currentUser,
+        handleNegotiation,
         handleSelectConversation,
         handleSendMessage,
         fetchConversations,
         handleSendProposalMessage,
         handleProposalChanges,
         handleUserSelect,
+        setInitialActiveConversation,
       }}
     >
       {children}

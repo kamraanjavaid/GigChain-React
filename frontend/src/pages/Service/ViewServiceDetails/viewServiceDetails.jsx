@@ -4,6 +4,7 @@ import axios from "axios";
 
 import LoadingSkeleton from "./viewServiceDetailsSkeloton/viewServiceDetailsSkeleton";
 import styles from "./styles/viewServiceDetails.module.scss";
+import Review from "../../../components/review/review";
 
 import { useAuth } from "../../../contexts/AuthContext";
 import { ChatContext } from "../../../contexts/ChatContext";
@@ -18,16 +19,12 @@ const ViewServiceDetails = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
 
-  // console.log("chat context in newGigDetails", ChatContext);
-
   const {
     activeConversation,
     setActiveConversation,
     handleSendProposalMessage,
     checkConversationExists,
   } = useContext(ChatContext);
-
-  // console.log("chat context's currentUser", currentUser);
 
   const [serviceDetails, setServiceDetails] = useState(null);
   const [message, setMessage] = useState("");
@@ -60,7 +57,6 @@ const ViewServiceDetails = () => {
         setServiceDetails(response.data.service);
         setProviderDetails(response.data.provider);
         setBudget(response.data.service.startingPrice);
-        // console.log("Provider details:", response.data.provider);
       } catch (error) {
         console.error("Error fetching service details:", error);
       }
@@ -101,19 +97,19 @@ const ViewServiceDetails = () => {
 
   const handleSendProposal = async () => {
     try {
-      console.log("Sending request to create a new proposal");
-
-      //check if a conversation between these two users already exists
       let conversationId;
       const conversationExists = await checkConversationExists(
         serviceDetails.user,
         currentUserId
       );
 
-      console.log("Conversation exists: ", conversationExists);
-
       if (conversationExists) {
         conversationId = conversationExists;
+
+        localStorage.setItem("activeConversation", conversationId);
+        navigate("/inbox");
+        return;
+
       } else {
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/api/conversations`,
@@ -127,6 +123,7 @@ const ViewServiceDetails = () => {
               participant: serviceDetails.user,
               serviceId: serviceDetails._id,
               proposal: {
+                messageText: message,
                 budget: budget,
                 deadline: deadline,
               },
@@ -134,38 +131,20 @@ const ViewServiceDetails = () => {
           }
         );
         const data = await response.json();
-        console.log("Response from creating a new conversation: ", data);
-        await new Promise((resolve) => {
-          setActiveConversation(data._id);
-          resolve();
-        });
         conversationId = data._id;
-      }
 
-      await handleSendProposalMessage(message, conversationId)
-        .then(() => {
-          console.log("Message sent successfully");
-        })
-        .catch((err) => {
-          console.error("Error in send proposal", err);
-        });
+        localStorage.setItem("activeConversation", conversationId);
+        navigate("/inbox");
+
+        // handleSendProposalMessage(message, conversationId).catch((error) => {
+          // console.error("Error sending proposal message:", error);
+        // });
+      }
     } catch (err) {
-      console.error("Error in send proposal", err);
+      console.error("Error in send proposal:", err);
+      alert("Failed to create conversation. Please try again.");
     }
   };
-
-  // const handleSendMessageToConversation = (conversationId) => {
-  //   console.log("Sending message to conversation: ", conversationId);
-  //   // setActiveConversation((currentActiveConversation) => {
-  //     // if (currentActiveConversation) {
-  //       await handleSendProposalMessage(message, conversationId);
-  //     // } else {
-  //       // console.error("Active conversation not set");
-  //     // }
-  //     // return currentActiveConversation;
-  //   // }
-  // // );
-  // };
 
   if (!serviceDetails) {
     return <LoadingSkeleton />;
@@ -253,8 +232,7 @@ const ViewServiceDetails = () => {
                 <span className={styles.time}>
                   {providerDetails?.localTime
                     ? providerDetails?.localTime
-                    : "N/A"}
-                  {" "}
+                    : "N/A"}{" "}
                 </span>
                 <p className={styles.location}>
                   {providerDetails?.location?.city
@@ -314,9 +292,9 @@ const ViewServiceDetails = () => {
       </div>
       <div className={styles.reviewsContainer}>
         <h2>Recent Reviews</h2>
-        {/* {reviews.map((review) => (
+        {reviews.map((review) => (
           <Review key={review.reviewer} {...review} />
-        ))} */}
+        ))}
       </div>
     </>
   );

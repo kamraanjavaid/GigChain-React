@@ -1,17 +1,23 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import styles from "./navigation.module.scss";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import DropdownMenu from "../dropdownMenu/dropdownMenu";
+import { ChatContext } from "../../contexts/ChatContext";
 
 export default function Navigation() {
+  const { unReadCount } = useContext(ChatContext);
   const { currentUser, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const searchBarRef = useRef(null);
   const avatarMenuRef = useRef(null);
+
+  useEffect(() => {
+    console.log("Unread count: ", unReadCount);
+  }, [unReadCount]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -111,7 +117,12 @@ export default function Navigation() {
           {currentUser && (
             <>
               <Link to="/inbox" className={styles.navbar_link}>
-                <i className="fas fa-inbox"></i> Inbox
+                <div className={styles.inbox_container}>
+                  <i className="fas fa-comments"></i> Inbox
+                  {unReadCount ? (
+                    <span className={styles.unread_count}>{unReadCount}</span>
+                  ) : null}
+                </div>
               </Link>
               <Link to="/services" className={styles.navbar_link}>
                 <i className="fas fa-briefcase"></i> Services

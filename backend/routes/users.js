@@ -86,13 +86,13 @@ router.post("/register", async (req, res) => {
   try {
     const { firstName, lastName, userType, email, password } = req.body;
 
-    const ip = req.ip;
+    // const ip = req.ip;
 
-    console.log("IP in register route:", ip);
-    console.log("IP in register route:", req.socket.remoteAddress);
+    // console.log("IP in register route:", ip);
+    // console.log("IP in register route:", req.socket.remoteAddress);
 
-    const locationResponse = await axios.get(`https://ipapi.co/${ip}/json/`);
-    const locationData = locationResponse.data;
+    // const locationResponse = await axios.get(`https://ipapi.co/${ip}/json/`);
+    // const locationData = locationResponse.data;
 
     let user = await User.findOne({ email });
     if (user) {
@@ -108,11 +108,11 @@ router.post("/register", async (req, res) => {
       profilePictureUrl: defaultAvatar,
       coverPictureUrl: defaultCover,
 
-      location: {
-        city: locationData.city,
-        country: locationData.country_name,
-        timezone: locationData.timezone,
-      },
+      // location: {
+      //   city: locationData.city,
+      //   country: locationData.country_name,
+      //   timezone: locationData.timezone,
+      // },
 
       verificationCode: undefined,
       verificationCodeExpires: undefined,
@@ -346,7 +346,7 @@ router.get("/search", async (req, res) => {
     const users = await User.find({
       $or: [
         { firstName: { $regex: query, $options: "i" } },
-        { lastName: { $regex: query, $options: "i" } },
+        { lastName: { $regex: query, $options: "Yi" } },
         {
           $expr: {
             $regexMatch: {

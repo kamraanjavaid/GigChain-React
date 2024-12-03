@@ -6,6 +6,7 @@ const http = require("http");
 const socketIO = require("socket.io");
 const Message = require("./models/Message");
 const Proposal = require("./models/Proposal");
+const Negotiation = require("./models/Negotiation");
 
 const env = process.env.NODE_ENV || "development";
 dotenv.config({ path: `.env.${env}` });
@@ -71,9 +72,8 @@ io.on("connection", (socket) => {
         conversationId
       );
 
-      // if budget and deadline are not provided, use the previous values
       const previousProposal = await Proposal.findOne({ conversationId });
-     
+
       if (!budget) {
         budget = previousProposal.budget;
       }
@@ -104,6 +104,171 @@ io.on("connection", (socket) => {
     }
   );
 
+  socket.on("negotiation-update", async (data, callback) => {
+    try {
+      const { conversationId, sender, budget, deadline, notes } = data;
+
+      const negotiation = await Negotiation.findOne({
+        conversation_id: conversationId,
+      });
+
+      if (!negotiation) {
+        const proposal = await Proposal.findOne({
+          conversationId,
+        });
+
+        if (!proposal) {
+          throw new Error("No proposal found for this conversation");
+        }
+
+        const newNegotiation = new Negotiation({
+          proposal_id: proposal._id,
+          conversation_id: conversationId,
+          rounds: [
+            {
+              budget,
+              deadline,
+              notes,
+              proposed_by: sender,
+              status: "pending",
+            },
+          ],
+          current_round: 0,
+        });
+
+        await newNegotiation.save();
+
+        const systemMessage = new Message({
+          conversationId,
+          sender: sender,
+          content: JSON.stringify({
+            type: "negotiation_update",
+            negotiation_ref: newNegotiation._id,
+            round: 0,
+            changes: {
+              budget,
+              deadline,
+              notes,
+            },
+          }),
+          messageType: "negotiation",
+        });
+
+        await systemMessage.save();
+
+        io.to(conversationId).emit("new_negotiation", {
+          negotiation: newNegotiation,
+          message: systemMessage,
+        });
+
+        callback({
+          success: true,
+          data: newNegotiation,
+        });
+      } else {
+        const newRound = {
+          budget,
+          deadline,
+          notes,
+          proposed_by: sender,
+          status: "pending",
+        };
+
+        negotiation.rounds.push(newRound);
+        negotiation.current_round += 1;
+        await negotiation.save();
+
+        const systemMessage = new Message({
+          conversationId,
+          sender: sender,
+          content: JSON.stringify({
+            type: "negotiation_update",
+            negotiation_ref: negotiation._id,
+            round: negotiation.current_round,
+            changes: {
+              budget,
+              deadline,
+              notes,
+            },
+          }),
+          messageType: "negotiation",
+        });
+
+        await systemMessage.save();
+
+        io.to(conversationId).emit("negotiation_updated", {
+          negotiation,
+          message: systemMessage,
+        });
+
+        callback({
+          success: true,
+          data: negotiation,
+        });
+      }
+    } catch (error) {
+      console.error("Negotiation update error:", error);
+      callback({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+
+  socket.on("negotiation-response", async (data, callback) => {
+    try {
+      const { negotiationId, roundIndex, response, userId } = data;
+
+      const negotiation = await Negotiation.findById(negotiationId);
+      if (!negotiation) {
+        throw new Error("Negotiation not found");
+      }
+
+      negotiation.rounds[roundIndex].status = response;
+      await negotiation.save();
+
+      const systemMessage = new Message({
+        conversationId: negotiation.conversation_id,
+        sender: userId,
+        content: JSON.stringify({
+          type: "negotiation_response",
+          negotiation_ref: negotiationId,
+          round: roundIndex,
+          response,
+        }),
+        messageType: "negotiation",
+      });
+
+      await systemMessage.save();
+
+      if (response === "accepted") {
+        const proposal = await Proposal.findById(negotiation.proposal_id);
+        if (proposal) {
+          proposal.budget = negotiation.rounds[roundIndex].budget;
+          proposal.deadline = negotiation.rounds[roundIndex].deadline;
+          proposal.status = "accepted";
+          await proposal.save();
+        }
+      }
+
+      io.to(negotiation.conversation_id).emit("negotiation_response", {
+        negotiation,
+        message: systemMessage,
+      });
+
+      callback({
+        success: true,
+        data: negotiation,
+      });
+    } catch (error) {
+      console.error("Negotiation response error:", error);
+      callback({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
@@ -125,5 +290,8 @@ app.use("/api/service", cors(), serviceRoutes);
 
 const messageRoutes = require("./routes/conversations");
 app.use("/api/conversations", cors(), messageRoutes);
+
+const negotiationRoutes = require("./routes/negotiations");
+app.use("/api/negotiations", cors(), negotiationRoutes);
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

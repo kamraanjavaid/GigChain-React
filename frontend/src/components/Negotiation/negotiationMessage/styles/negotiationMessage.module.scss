@@ -1,0 +1,115 @@
+.negotiationMessage {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+    max-width: 80%;
+
+    &.sent {
+        margin-left: auto;
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    &.received {
+        margin-right: auto;
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+}
+
+.negotiationHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #64748b;
+    font-size: 0.9rem;
+
+    .icon {
+        font-size: 1.2rem;
+    }
+}
+
+.negotiationDetails {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .detail {
+        background: white;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+
+        label {
+            display: block;
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+    }
+}
+
+.notes {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+
+    label {
+        display: block;
+        color: #64748b;
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+
+    p {
+        color: #1e293b;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+
+    button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.accept {
+            background: #22c55e;
+            color: white;
+            border: none;
+
+            &:hover {
+                background: #16a34a;
+            }
+        }
+
+        &.reject {
+            background: #ef4444;
+            color: white;
+            border: none;
+
+            &:hover {
+                background: #dc2626;
+            }
+        }
+    }
+}

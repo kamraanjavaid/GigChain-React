@@ -7,6 +7,9 @@ const ProposalSchema = new mongoose.Schema(
       ref: "Conversation",
       required: true,
     },
+    messageText: {
+      type: String,
+    },
     budget: { type: Number },
     deadline: { type: Date },
     status: {

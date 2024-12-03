@@ -61,27 +61,22 @@ router.put("/update-proposal-status/:proposalId", async (req, res) => {
   }
 });
 
-// // Get all proposals for a freelancer
 // router.get('/freelancer-proposals/:freelancerId', async (req, res) => {
 //   // Implementation
 // });
 
-// // Create a new proposal
 // router.post('/proposals', async (req, res) => {
 //   // Implementation
 // });
 
-// // Update a proposal
 // router.put('/proposals/:proposalId', async (req, res) => {
 //   // Implementation
 // });
 
-// // Get messages for a proposal
 // router.get('/proposals/:proposalId/messages', async (req, res) => {
 //   // Implementation
 // });
 
-// // Add a message to a proposal
 // router.post('/proposals/:proposalId/messages', async (req, res) => {
 //   // Implementation
 // });

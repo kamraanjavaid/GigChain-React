@@ -55,7 +55,6 @@
         box-sizing: border-box;
 
         .userType_container {
-          background-color: #f4f4f9; /* Adjust the color to match your form */
           // padding: 15px;
           border-radius: 8px;
           width: 100%;
@@ -94,7 +93,7 @@
         .input {
           width: 450px;
           height: 60px;
-          background-color: base.$background_light;
+          background-color: white;
           border: none;
           border-radius: 4px;
           outline: none;
@@ -191,6 +190,13 @@
 //   justify-content: space-between;
 //   margin-bottom: 1rem;
 // }
+
+
+.userType_buttons_container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
 
 .userType_button {
   width: 100%;

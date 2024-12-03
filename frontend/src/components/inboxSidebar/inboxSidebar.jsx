@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import styles from "./styles/sidebar.module.scss";
 import PropTypes from "prop-types";
+
 function Sidebar({
   currentUser,
   messages,
@@ -7,32 +9,90 @@ function Sidebar({
   activeConversation,
   onSelectConversation,
 }) {
-  // console.log("Active Conversation in Sidebar Component: ", activeConversation);
+  useEffect(() => {
+    if (activeConversation) {
+      const activeElement = document.getElementById(
+        `conversation-${activeConversation}`
+      );
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [activeConversation]);
 
-  // //print otheruser to the console
-  // const variable = conversations.map((convo) => {
-  //   const otherUser = convo.participants.find(
-  //     (participant) => participant._id !== currentUser.id
-  //   );
-  //   console.log("The otherUser we just sent here:", otherUser);
-  // });
+  const sortedConversations = [...conversations].sort((a, b) => {
+    const timeA = a.lastMessage?.timestamp
+      ? new Date(a.lastMessage.timestamp)
+      : new Date(a.createdAt);
+    const timeB = b.lastMessage?.timestamp
+      ? new Date(b.lastMessage.timestamp)
+      : new Date(b.createdAt);
 
-  console.log("Conversations in Sidebar Component: ", conversations);
+    return timeB - timeA;
+  });
+
+  const formatNegotiationMessage = (negotiation) => {
+    if (!negotiation) return "Negotiation details not available";
+
+    const changes = negotiation.changes;
+    if (negotiation.type === "update") {
+      const updates = [];
+      if (changes.budget) updates.push(`Budget: $${changes.budget}`);
+      if (changes.deadline)
+        updates.push(
+          `Deadline: ${new Date(changes.deadline).toLocaleDateString()}`
+        );
+      if (changes.notes) updates.push(`Notes: ${changes.notes}`);
+      return `Updated: ${updates.join(", ")}`;
+    }
+
+    if (negotiation.type === "response") {
+      return `Negotiation ${negotiation.response || "pending"}`;
+    }
+
+    if (negotiation.type === "final") {
+      return "Negotiation finalized";
+    }
+
+    return "Negotiation in progress";
+  };
+
+  const getLastMessageTime = (convo) => {
+    console.log("Convo: ", convo);
+    let lastMessageTime;
+    lastMessageTime = new Date(
+      convo?.lastMessage?.timestamp
+    ).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+    console.log("Last message time: ", lastMessageTime);
+
+    return lastMessageTime;
+  };
+
+  const getLastMessage = (convo) => {
+    if (!convo.lastMessage) return "No messages yet";
+
+    switch (convo.lastMessage.messageType) {
+      case "negotiation":
+        return "💼 Negotiation Update";
+      case "proposal":
+        return "💼 Proposal";
+      case "text":
+        return convo.lastMessage.content;
+      case "system":
+        return "System message";
+      default:
+        return "No messages yet";
+    }
+  };
 
   return (
     <div className={styles.sidebar}>
-      {conversations.map((convo) => {
-        console.log("Convo in Sidebar Component: ", convo);
-        const lastMessageText = convo.lastMessage
-          ? convo.lastMessage.content
-          : "No messages yet";
-
+      {sortedConversations.map((convo) => {
         const otherUser = convo.participants.find(
           (participant) =>
             participant._id !== (currentUser?._id || currentUser?.id)
         );
-
-        console.log("Other User in Sidebar Component: ", otherUser);
 
         return (
           <div
@@ -64,7 +124,7 @@ function Sidebar({
                     : styles.inActiveDate
                 }`}
               >
-                {new Date(convo.createdAt).toLocaleDateString()}
+                {getLastMessageTime(convo)}
               </p>
               <p
                 className={`${styles.lastMessage} ${
@@ -73,7 +133,7 @@ function Sidebar({
                     : styles.inActiveMessage
                 }`}
               >
-                {lastMessageText}
+                {getLastMessage(convo)}
               </p>
             </div>
           </div>
