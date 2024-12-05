@@ -23,6 +23,7 @@ import Navigation from "../src/components/navigation/navigation";
 import Footer from "../src/components/footer/footer";
 import "./App.css";
 import { ChatProvider } from "./contexts/ChatContext";
+import EnhancedProposalPage from "./components/enhancedProposalPage/enhancedProposalPage";
 
 function AppContent() {
   const location = useLocation();
@@ -50,6 +51,10 @@ function AppContent() {
         <Route
           path="/create_service"
           element={<ProtectedRoute element={CreateService} />}
+        />
+        <Route
+          path="/enhancedProposalPage"
+          element={<ProtectedRoute element={EnhancedProposalPage} />}
         />
         <Route
           path="/category/:mainCategory/:subCategory"

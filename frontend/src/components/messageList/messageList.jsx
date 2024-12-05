@@ -23,6 +23,8 @@ function MessageList({
   const messageListRef = useRef(null);
   const [error, setError] = useState(null);
 
+  console.log("messages in messageList", messages);
+
   const [isNegotiationModalOpen, setIsNegotiationModalOpen] = useState(false);
   const [currentProposal, setCurrentProposal] = useState(null);
 
@@ -77,128 +79,134 @@ function MessageList({
   }, [messages]);
 
   return (
-    otherUser && (
-      <div className={styles.leftSideContainer}>
-        <div className={styles.messagesWrapper}>
-          <div className={styles.receiptNameBar}>
-            <Link to={`/user/${otherUser._id}`}>
-              <h2 className={styles.receiptName}>
-                {otherUser.firstName} {otherUser.lastName}
-              </h2>
-            </Link>
-          </div>
-          <div className={styles.message_list} ref={messageListRef}>
-            {/* <ProposalSection
+    <>
+      {otherUser && (
+        <div className={styles.leftSideContainer}>
+          <div className={styles.messagesWrapper}>
+            <div className={styles.receiptNameBar}>
+              <Link to={`/user/${otherUser._id}`}>
+                <h2 className={styles.receiptName}>
+                  {otherUser.firstName} {otherUser.lastName}
+                </h2>
+              </Link>
+            </div>
+            <div className={styles.message_list} ref={messageListRef}>
+              {/* <ProposalSection
               handleProposalChanges={handleProposalChanges}
               conversationId={activeConversation}
             /> */}
 
-            <div className={styles.main_message_content_container}>
-              {messages.map((message) => {
-                const messageDate = new Date(message.timestamp);
-                const currentDate = new Date();
+              <div className={styles.main_message_content_container}>
+                {messages.map((message) => {
+                  const messageDate = new Date(message.timestamp);
+                  const currentDate = new Date();
 
-                console.log("well, this is the message", message);
+                  console.log("well, this is the message", message);
 
-                const messageDateOnly = new Date(
-                  messageDate.getFullYear(),
-                  messageDate.getMonth(),
-                  messageDate.getDate()
-                );
-                const currentDateOnly = new Date(
-                  currentDate.getFullYear(),
-                  currentDate.getMonth(),
-                  currentDate.getDate()
-                );
-
-                const isToday =
-                  messageDateOnly.getTime() === currentDateOnly.getTime();
-                const isYesterday =
-                  messageDateOnly.getTime() ===
-                  currentDateOnly.getTime() - 24 * 60 * 60 * 1000;
-
-                const timeString = messageDate.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-
-                let displayDateTime;
-                if (isToday) {
-                  displayDateTime = timeString;
-                } else if (isYesterday) {
-                  displayDateTime = `Yesterday ${timeString}`;
-                } else {
-                  const dateString = messageDate.toLocaleDateString();
-                  displayDateTime = `${dateString} ${timeString}`;
-                }
-
-                if (message.messageType === "negotiation") {
-                  return (
-                    <NegotiationMessage
-                      key={message._id}
-                      message={message}
-                      currentUser={currentUser}
-                      onAccept={(negotiationId, round) =>
-                        handleNegotiationResponse(
-                          negotiationId,
-                          round,
-                          "accepted"
-                        )
-                      }
-                      onReject={(negotiationId, round) =>
-                        handleNegotiationResponse(
-                          negotiationId,
-                          round,
-                          "rejected"
-                        )
-                      }
-                    />
+                  const messageDateOnly = new Date(
+                    messageDate.getFullYear(),
+                    messageDate.getMonth(),
+                    messageDate.getDate()
                   );
-                }
-
-                if (message.messageType === "proposal") {
-                  return (
-                    <ProposalMessage key={message._id} message={message} />
+                  const currentDateOnly = new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth(),
+                    currentDate.getDate()
                   );
-                }
 
-                return (
-                  <div className={styles.main_cont_msg} key={message._id}>
-                    <div
-                      className={` ${styles.chatBubble} ${
-                        message.sender === currentUserId
-                          ? styles.sent
-                          : styles.received
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                    <p
-                      className={`${
-                        message.sender === currentUserId
-                          ? styles.sentTimestamp
-                          : styles.receivedTimestamp
-                      }`}
-                    >
-                      {displayDateTime}
-                    </p>
-                  </div>
-                );
-              })}
+                  const isToday =
+                    messageDateOnly.getTime() === currentDateOnly.getTime();
+                  const isYesterday =
+                    messageDateOnly.getTime() ===
+                    currentDateOnly.getTime() - 24 * 60 * 60 * 1000;
+
+                  const timeString = messageDate.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+
+                  let displayDateTime;
+                  if (isToday) {
+                    displayDateTime = timeString;
+                  } else if (isYesterday) {
+                    displayDateTime = `Yesterday ${timeString}`;
+                  } else {
+                    const dateString = messageDate.toLocaleDateString();
+                    displayDateTime = `${dateString} ${timeString}`;
+                  }
+
+                  if (message.messageType === "negotiation") {
+                    return (
+                      <NegotiationMessage
+                        key={message._id}
+                        message={message}
+                        currentUser={currentUser}
+                        onAccept={(negotiationId, round) =>
+                          handleNegotiationResponse(
+                            negotiationId,
+                            round,
+                            "accepted"
+                          )
+                        }
+                        onReject={(negotiationId, round) =>
+                          handleNegotiationResponse(
+                            negotiationId,
+                            round,
+                            "rejected"
+                          )
+                        }
+                      />
+                    );
+                  }
+
+                  if (message.messageType === "proposal") {
+                    return (
+                      <ProposalMessage
+                        key={message._id}
+                        message={message}
+                        setIsNegotiationModalOpen={setIsNegotiationModalOpen}
+                        setCurrentProposal={setCurrentProposal}
+                      />
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className={styles.main_cont_msg} key={message._id}>
+                        <div
+                          className={` ${styles.chatBubble} ${
+                            message.sender === currentUserId
+                              ? styles.sent
+                              : styles.received
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                        <p
+                          className={`${
+                            message.sender === currentUserId
+                              ? styles.sentTimestamp
+                              : styles.receivedTimestamp
+                          }`}
+                        >
+                          {displayDateTime}
+                        </p>
+                      </div>
+                      <NegotiationModal
+                        isOpen={isNegotiationModalOpen}
+                        onClose={() => setIsNegotiationModalOpen(false)}
+                        currentProposal={currentProposal}
+                        onSubmit={handleNegotiation}
+                      />
+                    </>
+                  );
+                })}
+              </div>
             </div>
-            <NegotiationButton
-              onOpenNegotiation={() => setIsNegotiationModalOpen(true)}
-            />
-            <NegotiationModal
-              isOpen={isNegotiationModalOpen}
-              onClose={() => setIsNegotiationModalOpen(false)}
-              currentProposal={currentProposal}
-              onSubmit={handleNegotiation}
-            />
           </div>
         </div>
-      </div>
-    )
+      )}
+    </>
   );
 }
 

@@ -26,6 +26,10 @@ const messageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Proposal",
   },
+  negotiation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Negotiation",
+  },
 
   metadata: {
     negotiation: {
@@ -59,11 +63,44 @@ const messageSchema = new mongoose.Schema({
 });
 
 messageSchema.pre("save", async function (next) {
-  if (this.messageType === "proposal") {
-    this.proposal = await Proposal.findById(this.proposalId);
+  if (this.messageType === "proposal" && this.proposalId) {
+    this.proposal = await mongoose.model("Proposal").findById(this.proposalId);
   }
   next();
 });
+
+messageSchema.pre("find", function () {
+  this.populate("proposal");
+});
+
+messageSchema.pre("findOne", function () {
+  this.populate("proposal");
+});
+
+messageSchema.pre("findOne", function () {
+  this.populate("negotiation");
+});
+
+messageSchema.pre("find", function () {
+  this.populate("negotiation");
+});
+
+messageSchema.virtual("proposalDetails").get(function () {
+  if (this.messageType === "proposal" && this.proposal) {
+    return this.proposal;
+  }
+  return null;
+});
+
+messageSchema.virtual("negotiationDetails").get(function () {
+  if (this.messageType === "negotiation" && this.negotiation) {
+    return this.negotiation;
+  }
+  return null;
+});
+
+messageSchema.set("toJSON", { virtuals: true });
+messageSchema.set("toObject", { virtuals: true });
 
 const Message = mongoose.model("Message", messageSchema);
 

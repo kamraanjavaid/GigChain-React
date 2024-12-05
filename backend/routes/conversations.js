@@ -113,8 +113,9 @@ router.post("/", authMiddleware, async (req, res) => {
       sender: req.user._id,
       content: messageText,
       messageType: "proposal",
+      proposal: proposal._id,
     });
-    
+
     await message.save();
 
     res.status(201).json(conversation);
@@ -142,7 +143,16 @@ router.get("/:conversationId/messages", async (req, res) => {
       "Conversation ID in messages api endpoint(New): ",
       conversationId
     );
-    const messages = await Message.find({ conversationId });
+    const messages = await Message.find({ conversationId })
+      .populate({
+        path: "proposal",
+        select: "messageText budget deadline",
+      })
+      .populate({
+        path: "negotiation",
+        select: "budget deadline notes",
+      });
+
     console.log("Messages in messages api endpoint(New): ", messages);
     res.json(messages);
   } catch (error) {
