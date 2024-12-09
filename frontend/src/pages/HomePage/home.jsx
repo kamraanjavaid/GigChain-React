@@ -23,7 +23,7 @@ function HomePage() {
       const response = await axios.get(
         `${
           import.meta.env.VITE_API_URL
-        }/api/service/search?query=${searchQuery}`
+        }/api/services/search?query=${searchQuery}`
       );
       // console.log(response.data[0]);
       setSearchResults(response.data);
@@ -83,9 +83,11 @@ function HomePage() {
           </div>
         ) : (
           <div className={styles.featuredServicesContainer}>
-            <FeaturedServicesSection serviceType={"Development"} />
             <FeaturedServicesSection serviceType={"Web Development"} />
             <FeaturedServicesSection serviceType={"Graphic Design"} />
+            <FeaturedServicesSection serviceType={"Content Writing"} />
+            <FeaturedServicesSection serviceType={"Digital Marketing"} />
+            <FeaturedServicesSection serviceType={"SEO Services"} />
           </div>
         )}
       </div>

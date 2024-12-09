@@ -11,7 +11,7 @@ function ServiceCard({ service }) {
     const recordImpression = async () => {
       try {
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/service/${
+          `${import.meta.env.VITE_API_URL}/api/services/${
             service._id
           }/impression`
         );

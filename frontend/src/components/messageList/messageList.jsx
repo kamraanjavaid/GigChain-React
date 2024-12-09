@@ -6,52 +6,40 @@ import PropTypes from "prop-types";
 import { ProposalSection } from "../../pages/Inbox/ProposalSection/proposalSection";
 import { ChatContext } from "../../contexts/ChatContext";
 import { NegotiationModal } from "../Negotiation/negotiationModal/negotiationModal";
-import { NegotiationButton } from "../Negotiation/negotiationButton/negotiationButton";
-import { NegotiationMessage } from "../Negotiation/negotiationMessage/negotiationMessage";
 import ProposalMessage from "../../components/proposalMessage/proposalMessage";
+// import { LoadingUI } from "../../components/inboxSidebar/loadingUI/loadingUI";
 
 function MessageList({
   currentUser,
   conversations,
   conversationId,
   activeConversation,
-  handleNegotiation,
+  fetchConversations,
   messages,
 }) {
-  const { handleProposalChanges } = useContext(ChatContext);
   const [otherUser, setOtherUser] = useState({});
   const messageListRef = useRef(null);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  console.log("messages in messageList", messages);
+  // console.log("messages in messageList", messages);
 
   const [isNegotiationModalOpen, setIsNegotiationModalOpen] = useState(false);
   const [currentProposal, setCurrentProposal] = useState(null);
 
   const currentUserId = currentUser?._id || currentUser?.id;
 
-  const fetchProposalDetails = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/negotiations/${negotiationId}/latest`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setCurrentProposal(response.data);
-    } catch (err) {
-      setError("Failed to load proposal details");
-    }
-  }, [conversationId]);
-
   useEffect(() => {
-    fetchProposalDetails();
-  }, [fetchProposalDetails]);
+    try {
+      setIsLoading(true);
+      console.log("Fetching conversations after negotiation modal closes");
+      fetchConversations();
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isNegotiationModalOpen]);
 
   useEffect(() => {
     if (conversations && conversations.length > 0 && currentUserId) {
@@ -101,7 +89,7 @@ function MessageList({
                   const messageDate = new Date(message.timestamp);
                   const currentDate = new Date();
 
-                  console.log("well, this is the message", message);
+                  // console.log("well, this is the message", message);
 
                   const messageDateOnly = new Date(
                     messageDate.getFullYear(),
@@ -135,30 +123,6 @@ function MessageList({
                     displayDateTime = `${dateString} ${timeString}`;
                   }
 
-                  if (message.messageType === "negotiation") {
-                    return (
-                      <NegotiationMessage
-                        key={message._id}
-                        message={message}
-                        currentUser={currentUser}
-                        onAccept={(negotiationId, round) =>
-                          handleNegotiationResponse(
-                            negotiationId,
-                            round,
-                            "accepted"
-                          )
-                        }
-                        onReject={(negotiationId, round) =>
-                          handleNegotiationResponse(
-                            negotiationId,
-                            round,
-                            "rejected"
-                          )
-                        }
-                      />
-                    );
-                  }
-
                   if (message.messageType === "proposal") {
                     return (
                       <ProposalMessage
@@ -166,6 +130,7 @@ function MessageList({
                         message={message}
                         setIsNegotiationModalOpen={setIsNegotiationModalOpen}
                         setCurrentProposal={setCurrentProposal}
+                        setIsLoading={setIsLoading}
                       />
                     );
                   }
@@ -192,17 +157,17 @@ function MessageList({
                           {displayDateTime}
                         </p>
                       </div>
-                      <NegotiationModal
-                        isOpen={isNegotiationModalOpen}
-                        onClose={() => setIsNegotiationModalOpen(false)}
-                        currentProposal={currentProposal}
-                        onSubmit={handleNegotiation}
-                      />
                     </>
                   );
                 })}
               </div>
             </div>
+            <NegotiationModal
+              isOpen={isNegotiationModalOpen}
+              onClose={() => setIsNegotiationModalOpen(false)}
+              currentProposal={currentProposal}
+              fetchConversations={fetchConversations}
+            />
           </div>
         </div>
       )}

@@ -44,7 +44,7 @@ const freelancerSchema = new mongoose.Schema({
     },
   ],
 
-  coverPictureUrl: { type: String, required: true },
+  coverPictureUrl: { type: String, required: false },
 
   languages: [String],
 

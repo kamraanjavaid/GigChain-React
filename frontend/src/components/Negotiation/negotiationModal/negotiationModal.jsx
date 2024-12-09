@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./styles/negotiationModal.module.scss";
+import axios from "axios";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export const NegotiationModal = ({
   isOpen,
   onClose,
   currentProposal,
-  onSubmit,
+  fetchConversations,
 }) => {
+  const { currentUser } = useAuth();
+  const { conversationId } = currentProposal || {};
   const [newBudget, setNewBudget] = useState(currentProposal?.budget || "");
   const [newDeadline, setNewDeadline] = useState(
     currentProposal?.deadline
@@ -14,17 +18,75 @@ export const NegotiationModal = ({
       : ""
   );
   const [notes, setNotes] = useState("");
+  const [conversationDetails, setConversationDetails] = useState(null);
 
-  const { budget, deadline, messageText } = currentProposal;
+  useEffect(() => {
+    if (currentProposal) {
+      setNewBudget(currentProposal.budget || "");
+      setNewDeadline(
+        currentProposal.deadline
+          ? new Date(currentProposal.deadline).toISOString().split("T")[0]
+          : ""
+      );
+      setNotes("");
+    }
+  }, [currentProposal]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const fetchConversationDetails = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/conversations/${conversationId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setConversationDetails(response.data);
+        console.log("conversation details", response.data);
+      } catch (error) {
+        console.error("Error fetching conversation details:", error);
+      }
+    };
+
+    fetchConversationDetails();
+  }, [conversationId]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
-      budget: parseFloat(newBudget),
-      deadline: new Date(newDeadline),
-      notes,
-    });
-    onClose();
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/conversations/counter-offer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            conversationId: conversationId,
+            sender: currentUser._id,
+            serviceId: conversationDetails.serviceId._id,
+            proposal: {
+              messageText: notes,
+              budget: newBudget,
+              deadline: newDeadline,
+            },
+          }),
+        }
+      );
+
+      if (response.status === 201) {
+        fetchConversations();
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error submitting counter-offer:", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -34,14 +96,6 @@ export const NegotiationModal = ({
       <div className={styles.modalContent}>
         <h2>Update Project Terms</h2>
         <form onSubmit={handleSubmit}>
-          {/* <div className={styles.currentTerms}>
-            <h3>Current Terms:</h3>
-            <div className={styles.termDetails}>
-              <p>Budget: ${budget}</p>
-              <p>Deadline: {new Date(deadline).toLocaleDateString()}</p>
-            </div>
-          </div> */}
-
           <div className={styles.newTerms}>
             <h3>New Terms:</h3>
             <div className={styles.inputGroup}>

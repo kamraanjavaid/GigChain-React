@@ -8,9 +8,11 @@ export const NegotiationMessage = ({
   currentUser,
   onAccept,
   onReject,
+  currentNegotiation,
 }) => {
   const isCurrentUserSender = message.sender === currentUser._id;
-  const metadata = JSON.parse(message.content);
+  // const { metadata } = currentNegotiation;
+  console.log("currentNegotiation: ", currentNegotiation);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -33,7 +35,8 @@ export const NegotiationMessage = ({
         isCurrentUserSender ? styles.sent : styles.received
       }`}
     >
-      <div className={styles.negotiationHeader}>
+      well well well
+      {/* <div className={styles.negotiationHeader}>
         <span className={styles.icon}>💼</span>
         <span>
           {metadata.type === "update"
@@ -91,7 +94,7 @@ export const NegotiationMessage = ({
             Terms were {metadata.response}
           </p>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

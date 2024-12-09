@@ -13,7 +13,7 @@ const messageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+    required: false,
   },
 
   messageType: {
@@ -25,35 +25,6 @@ const messageSchema = new mongoose.Schema({
   proposal: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Proposal",
-  },
-  negotiation: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Negotiation",
-  },
-
-  metadata: {
-    negotiation: {
-      type: {
-        type: String,
-        enum: ["update", "response", "final"],
-      },
-      negotiationId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Negotiation",
-      },
-      round: {
-        type: Number,
-      },
-      changes: {
-        budget: Number,
-        deadline: Date,
-        notes: String,
-      },
-      response: {
-        type: String,
-        enum: ["accepted", "rejected", "pending"],
-      },
-    },
   },
 
   timestamp: {
@@ -77,24 +48,9 @@ messageSchema.pre("findOne", function () {
   this.populate("proposal");
 });
 
-messageSchema.pre("findOne", function () {
-  this.populate("negotiation");
-});
-
-messageSchema.pre("find", function () {
-  this.populate("negotiation");
-});
-
 messageSchema.virtual("proposalDetails").get(function () {
   if (this.messageType === "proposal" && this.proposal) {
     return this.proposal;
-  }
-  return null;
-});
-
-messageSchema.virtual("negotiationDetails").get(function () {
-  if (this.messageType === "negotiation" && this.negotiation) {
-    return this.negotiation;
   }
   return null;
 });

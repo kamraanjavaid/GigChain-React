@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import styles from "./styles/messageInput.module.scss";
 
-function MessageInput({ onSendMessage, fetchConversations }) {
+function MessageInput({ onSendMessage }) {
   const [message, setMessage] = useState("");
-
 
   const handleSubmit = (event) => {
     event.preventDefault();
     onSendMessage(message);
     setMessage("");
-    fetchConversations();
   };
 
   return (

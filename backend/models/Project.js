@@ -33,7 +33,7 @@ const projectSchema = new mongoose.Schema({
     required: true,
   },
 
-  clientId: {
+  employerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
@@ -47,6 +47,11 @@ const projectSchema = new mongoose.Schema({
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Conversation",
+    required: true,
+  },
+  proposalId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Proposal",
     required: true,
   },
 

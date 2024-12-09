@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "redaxios";
 import styles from "./styles/profile.module.scss";
-// import { EditorState, convertToRaw, ContentState } from "draft-js";
-// import { Editor } from "react-draft-wysiwyg";
-// import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-// import draftToHtml from "draftjs-to-html";
-// import htmlToDraft from "html-to-draftjs";
+
 
 const CurrentUserProfile = () => {
   const { currentUser } = useAuth();

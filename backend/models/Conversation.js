@@ -9,6 +9,18 @@ const conversationSchema = new mongoose.Schema({
     },
   ],
 
+  freelancerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
+  employerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
   status: {
     type: String,
     enum: ["proposal", "accepted", "rejected"],

@@ -8,21 +8,17 @@ const UserSchema = new mongoose.Schema(
     userType: {
       type: String,
       enum: ["freelancer", "employer"],
-      required: true,
+      required: false,
+      default: "employer",
     },
+    googleId: { type: String, required: false },
+    provider: { type: String, required: false },
+    lastLogin: { type: Date, required: false },
     email: { type: String, unique: true },
     password: { type: String, required: false },
     profilePictureUrl: { type: String, required: false },
-
-    location: {
-      city: {
-        type: String,
-      },
-      country: {
-        type: String,
-      },
-    },
-
+    coverPictureUrl: { type: String, required: false },
+    isVerified: { type: Boolean, default: false },
     verificationCode: String,
     verificationCodeExpires: Date,
   },

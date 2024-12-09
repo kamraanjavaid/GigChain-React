@@ -4,6 +4,7 @@ const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
 const { S3Client } = require("@aws-sdk/client-s3");
+const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const Service = require("../models/Service");
 const User = require("../models/User");
 
@@ -15,16 +16,50 @@ const s3 = new S3Client({
   },
 });
 
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image! Please upload only images."), false);
+  }
+};
+
+// const upload = multer({
+//   storage: multerS3({
+//     s3: s3,
+//     bucket: process.env.AWS_BUCKET_NAME,
+//     contentType: multerS3.AUTO_CONTENT_TYPE,
+//     // acl: 'public-read',
+//     key: function (req, file, cb) {
+//       cb(null, Date.now().toString() + "-" + file.originalname);
+//     },
+//   }),
+//   limits: {
+//     fileSize: 5 * 1024 * 1024,
+//   },
+// }).array("images", 5);
+
 const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    // acl: 'public-read',
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
     key: function (req, file, cb) {
-      cb(null, Date.now().toString() + "-" + file.originalname);
+      cb(null, `${Date.now()}-${file.originalname}`);
     },
   }),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Not an image! Please upload only images."), false);
+    }
+  },
 });
 
 router.get("/search", async (req, res) => {
@@ -70,6 +105,17 @@ router.get("/category/:mainCategory/:subCategory", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// router.get("/:serviceId", async (req, res) => {
+//   try {
+//     const { serviceId } = req.params;
+//     const service = await Service.findOne({ _id: serviceId });
+//     res.status(200).json(service);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 
 router.get("/category/:category", async (req, res) => {
   // console.log("Fetching featured services");
@@ -126,7 +172,6 @@ router.get("/user", authMiddleware, async (req, res) => {
   }
 });
 
-
 router.use((req, res, next) => {
   console.log("Incoming request:", req.method, req.url);
   console.log("Request headers:", req.headers);
@@ -179,36 +224,136 @@ router.post(
   }
 );
 
-router.put("/:serviceId", async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-    const { title, description, startingPrice, category, thumbnailUrl } =
-      req.body;
-    const service = await Service.findById(serviceId);
-
-    if (!service) {
-      return res.status(404).json({ message: "Service not found" });
-    }
-
-    if (service.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    service.title = title;
-    service.description = description;
-    service.startingPrice = startingPrice;
-    service.category = category;
-    service.thumbnailUrl = thumbnailUrl;
-    service.updatedOn = new Date();
-
-    await service.save();
-
-    res.json({ message: "Service updated successfully", service });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+router.delete("/:serviceId/image", async (req, res) => {
+  const { serviceId } = req.params;
+  const { imageUrl } = req.body;
+  const service = await Service.findOne({ _id: serviceId });
+  service.images = service.images.filter((img) => img !== imageUrl);
+  await service.save();
+  res.json({ message: "Image deleted successfully" });
 });
+
+router.put(
+  "/:serviceId",
+  multer({
+    storage: multerS3({
+      s3: s3,
+      bucket: process.env.AWS_BUCKET_NAME,
+      metadata: function (req, file, cb) {
+        cb(null, { fieldName: file.fieldname });
+      },
+      key: function (req, file, cb) {
+        cb(null, `${Date.now()}-${file.originalname}`);
+      },
+    }),
+  }).array("images", 5),
+  async (req, res) => {
+    try {
+      const { serviceId } = req.params;
+      const {
+        title,
+        description,
+        startingPrice,
+        category,
+        existingImages,
+        currentUser,
+      } = req.body;
+
+      const service = await Service.findOne({ _id: serviceId });
+
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+
+      // if (service.user.toString() !== currentUser.toString()) {
+      //   return res.status(403).json({ message: "Unauthorized" });
+      // }
+
+      service.title = title;
+      service.description = description;
+      service.startingPrice = startingPrice;
+      service.category = category;
+      service.updatedOn = new Date();
+
+      let updatedImages = JSON.parse(existingImages || "[]");
+
+      if (req.files && req.files.length > 0) {
+        const newImageUrls = req.files.map((file) => file.location);
+        updatedImages = [...updatedImages, ...newImageUrls];
+      }
+
+      service.images = updatedImages;
+
+      if (updatedImages.length > 0) {
+        service.thumbnailUrl = updatedImages[0];
+      }
+
+      await service.save();
+
+      res.json({
+        message: "Service updated successfully",
+        service,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+// router.put("/:serviceId", (req, res) => {
+//   upload(req, res, async function (err) {
+//     if (err) {
+//       console.error("Multer error:", err);
+//       return res.status(400).json({ message: "Error uploading files" });
+//     }
+
+//     try {
+//       const { serviceId } = req.params;
+//       const { title, description, startingPrice, category, existingImages } =
+//         req.body;
+
+//       const service = await Service.findById(serviceId);
+
+//       if (!service) {
+//         return res.status(404).json({ message: "Service not found" });
+//       }
+
+//       if (service.user.toString() !== req.user._id.toString()) {
+//         return res.status(403).json({ message: "Unauthorized" });
+//       }
+
+//       service.title = title;
+//       service.description = description;
+//       service.startingPrice = startingPrice;
+//       service.category = category;
+//       service.updatedOn = new Date();
+
+//       let updatedImages = JSON.parse(existingImages || "[]");
+
+//       if (req.files && req.files.length > 0) {
+//         const newImageUrls = req.files.map((file) => file.location);
+//         updatedImages = [...updatedImages, ...newImageUrls];
+//       }
+
+//       service.images = updatedImages;
+
+//       if (updatedImages.length > 0) {
+//         service.thumbnailUrl = updatedImages[0];
+//       }
+
+//       await service.save();
+
+//       res.json({
+//         message: "Service updated successfully",
+//         service,
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: "Server error" });
+//     }
+//   });
+// });
 
 router.delete("/:serviceId", async (req, res) => {
   try {
@@ -219,13 +364,9 @@ router.delete("/:serviceId", async (req, res) => {
       return res.status(404).json({ message: "Service not found" });
     }
 
-    if (service.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
     await Service.findByIdAndDelete(serviceId);
 
-    res.json({ message: "Service deleted successfully" });
+    res.status(200).json({ message: "Service deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -234,7 +375,7 @@ router.delete("/:serviceId", async (req, res) => {
 
 router.get("/:serviceId", async (req, res) => {
   try {
-    const { serviceId } = req.params;
+    const serviceId = req.params.serviceId;
     const service = await Service.findById(serviceId);
 
     console.log("Service found: ", service);

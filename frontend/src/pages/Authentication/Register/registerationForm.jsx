@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "redaxios";
 import styles from "./styles/registerationForm.module.scss";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
@@ -12,25 +11,35 @@ export default function RegistrationForm() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const { login, loginGoogle } = useAuth();
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [notification, setNotification] = useState({
+    message: "",
+    type: "",
+  });
+  const [isEmailVerificationSent, setIsEmailVerificationSent] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(60);
+  const [verificationCode, setVerificationCode] = useState("");
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
-    userType: "",
     email: "",
     password: "",
     confirmPassword: "",
-    verificationCode: "",
   });
   const [errors, setErrors] = useState({});
+
+  // const isResendDisabled = remainingTime > 0;  ]=[-0987654321]0
+
+  const handleChangeEmail = () => {
+    setEmailVerified(false);
+    setIsEmailVerificationSent(false);
+    setVerificationCode("");
+    setNotification({ message: "", type: "" });
+  };
 
   const handleChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
-  };
-
-  const handleUserTypeSelect = (type) => {
-    setUserData({ ...userData, userType: type });
-    setErrors({ ...errors, userType: "" });
   };
 
   const handleGoogleSuccess = async (response) => {
@@ -96,7 +105,6 @@ export default function RegistrationForm() {
   };
 
   const handleSignIn = async () => {
-    // Validate input fields
     if (!userData.email) {
       alert("Email is required to sign in.");
       return;
@@ -154,7 +162,8 @@ export default function RegistrationForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!validateForm()) {
       return;
     }
@@ -164,161 +173,99 @@ export default function RegistrationForm() {
         `${import.meta.env.VITE_API_URL}/api/users/register`,
         userData
       );
+
       console.log(res.data);
 
-      const codeRes = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/users/send-verification`,
-        { email: userData.email }
-      );
-      console.log(codeRes.data);
-      alert("Verification code sent to your email");
-      handleNextStep();
+      if (res.status === 200) {
+        handleSignIn();
+      }
     } catch (error) {
       console.error("Registration error:", error.response.data);
       alert(error.response.data.message);
     }
   };
 
-  const handlePrevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
+  const checkAvailability = async (type, value) => {
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/users/check-availability`,
+      { params: { [type]: value } }
+    );
+    return res.data.available;
+  };
+
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
+
+  const sendVerificationCode = async (email) => {
+    try {
+      const available = await checkAvailability("email", email);
+      if (!available) {
+        setErrors({ email: "Email is already in use" });
+        return;
+      }
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/send-verification`,
+        { email }
+      );
+      if (response.status === 200) {
+        setIsEmailVerificationSent(true);
+        setNotification({
+          message: "Verification code sent to your email",
+          type: "success",
+        });
+        setErrors({});
+        setRemainingTime(60);
+        setIsResendDisabled(true);
+      }
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      setNotification({
+        message: "Failed to send verification code",
+        type: "error",
+      });
     }
   };
 
-  const handleNextStep = () => {
-    if (step < 3) {
-      setStep(step + 1);
+  const verifyCode = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/verify-code`,
+        {
+          email: userData.email,
+          verificationCode: verificationCode,
+        }
+      );
+      if (response.status === 200) {
+        setEmailVerified(true);
+        setNotification({
+          message: "Email verified successfully!",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      setNotification({
+        message: "Invalid verification code",
+        type: "error",
+      });
     }
   };
 
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <div className={styles.userType_container}>
-            <p>Register as a:</p>
-            <div className={styles.userType_buttons_container}>
-              <button
-                type="button"
-                className={`${styles.userType_button} ${
-                  userData.userType === "employer" ? styles.selected : ""
-                }`}
-                onClick={() => handleUserTypeSelect("employer")}
-              >
-                Employer
-              </button>
-              <button
-                type="button"
-                className={`${styles.userType_button} ${
-                  userData.userType === "freelancer" ? styles.selected : ""
-                }`}
-                onClick={() => handleUserTypeSelect("freelancer")}
-              >
-                Freelancer
-              </button>
-            </div>
-            {errors.userType && (
-              <p className={styles.error}>{errors.userType}</p>
-            )}
-          </div>
-        );
-
-      case 2:
-        return (
-          <>
-            <GoogleOAuthProvider
-              clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-            >
-              <GoogleLogin
-                buttonText="Register with Google"
-                onSuccess={handleGoogleSuccess}
-                onFailure={(error) =>
-                  console.error("Google Sign-In Error", error)
-                }
-                cookiePolicy={"single_host_origin"}
-              />
-            </GoogleOAuthProvider>
-
-            <div className={styles.or_container}>
-              <div className={styles.line}></div>
-              <div className={styles.or_text}>or</div>
-              <div className={styles.line}></div>
-            </div>
-
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="First Name"
-              name="firstName"
-              value={userData.firstName}
-              onChange={handleChange}
-            />
-            {errors.firstName && (
-              <p className={styles.error}>{errors.firstName}</p>
-            )}
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Last Name"
-              name="lastName"
-              value={userData.lastName}
-              onChange={handleChange}
-            />
-            {errors.lastName && (
-              <p className={styles.error}>{errors.lastName}</p>
-            )}
-            <input
-              className={styles.input}
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={userData.email}
-              onChange={handleChange}
-            />
-            {errors.email && <p className={styles.error}>{errors.email}</p>}
-            <input
-              className={styles.input}
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={userData.password}
-              onChange={handleChange}
-            />
-            {errors.password && (
-              <p className={styles.error}>{errors.password}</p>
-            )}
-            <input
-              className={styles.input}
-              type="password"
-              placeholder="Confirm Password"
-              name="confirmPassword"
-              value={userData.confirmPassword}
-              onChange={handleChange}
-            />
-            {errors.confirmPassword && (
-              <p className={styles.error}>{errors.confirmPassword}</p>
-            )}
-          </>
-        );
-
-      case 3:
-        return (
-          <>
-            <p>Please enter the verification code sent to your email:</p>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Verification Code"
-              name="verificationCode"
-              value={userData.verificationCode}
-              onChange={handleChange}
-            />
-          </>
-        );
-      default:
-        return null;
+  useEffect(() => {
+    let timer;
+    if (remainingTime > 0) {
+      timer = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            setIsResendDisabled(false);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
     }
-  };
+    return () => clearInterval(timer);
+  }, [remainingTime]);
 
   return (
     <React.Fragment>
@@ -336,50 +283,168 @@ export default function RegistrationForm() {
         </div>
 
         <div className={styles.parent_cont_left}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (step === 3) {
-                handleVerifyCode(e);
-              } else if (step === 2) {
-                handleSubmit();
-              } else {
-                handleNextStep();
-              }
-            }}
-            className={styles.main_content_container}
-          >
-            <div className={styles.stepContainer}>
-              <h2 className={styles.h4}>Register - Step {step} of 3</h2>
+          <div className={styles.main_content_container}>
+            <div className={styles.input_container}>
+              <GoogleOAuthProvider
+                clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+              >
+                <GoogleLogin
+                  buttonText="Register with Google"
+                  onSuccess={handleGoogleSuccess}
+                  onFailure={(error) =>
+                    console.error("Google Sign-In Error", error)
+                  }
+                  cookiePolicy={"single_host_origin"}
+                />
+              </GoogleOAuthProvider>
+
+              <div className={styles.or_container}>
+                <div className={styles.line}></div>
+                <div className={styles.or_text}>or</div>
+                <div className={styles.line}></div>
+              </div>
+
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="First Name"
+                name="firstName"
+                value={userData.firstName}
+                onChange={handleChange}
+              />
+              {errors.firstName && (
+                <p className={styles.error}>{errors.firstName}</p>
+              )}
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="Last Name"
+                name="lastName"
+                value={userData.lastName}
+                onChange={handleChange}
+              />
+              {errors.lastName && (
+                <p className={styles.error}>{errors.lastName}</p>
+              )}
+
+              <div className={styles.emailVerificationContainer}>
+                <div className={styles.emailInputWrapper}>
+                  <input
+                    type="email"
+                    name="email"
+                    className={`${styles.input} ${
+                      emailVerified ? styles.disabled : ""
+                    }`}
+                    placeholder="Email"
+                    value={userData.email}
+                    onChange={handleChange}
+                    disabled={emailVerified || isEmailVerificationSent}
+                  />
+                  <button
+                    type="button"
+                    className={styles.verifyButton}
+                    onClick={
+                      emailVerified
+                        ? handleChangeEmail
+                        : () => sendVerificationCode(userData.email)
+                    }
+                    disabled={
+                      !userData.email ||
+                      errors.email ||
+                      (isEmailVerificationSent && isResendDisabled)
+                    }
+                  >
+                    {emailVerified
+                      ? "Change Email"
+                      : isEmailVerificationSent
+                        ? remainingTime > 0
+                          ? `Resend Code (${remainingTime}s)`
+                          : "Resend Code"
+                        : "Verify Email"}
+                  </button>
+                </div>
+                {errors.email && (
+                  <p
+                    className={styles.verifiedBadge}
+                    style={{ color: "#e74c3c" }}
+                  >
+                    ✗ {errors.email}
+                  </p>
+                )}
+
+                {isEmailVerificationSent && !emailVerified && (
+                  <div className={styles.verificationCodeWrapper}>
+                    <input
+                      type="text"
+                      placeholder="Enter verification code"
+                      className={styles.input}
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className={styles.verifyButton}
+                      onClick={verifyCode}
+                    >
+                      Submit Code
+                    </button>
+                  </div>
+                )}
+
+                {emailVerified && (
+                  <p className={styles.verifiedBadge}>✓ Email Verified</p>
+                )}
+
+                {notification.message && (
+                  <p
+                    className={styles.verifiedBadge}
+                    style={{
+                      color:
+                        notification.type === "error" ? "#e74c3c" : "#2ecc71",
+                    }}
+                  >
+                    {notification.type === "error" ? "✗" : "✓"}{" "}
+                    {notification.message}
+                  </p>
+                )}
+              </div>
+
+              {/* <input
+                className={styles.input}
+                type="email"
+                placeholder="Email"
+                name="email"
+                value={userData.email}
+                onChange={handleChange}
+              />
+              {errors.email && <p className={styles.error}>{errors.email}</p>} */}
+              <input
+                className={styles.input}
+                type="password"
+                placeholder="Password"
+                name="password"
+                value={userData.password}
+                onChange={handleChange}
+              />
+              {errors.password && (
+                <p className={styles.error}>{errors.password}</p>
+              )}
+              <input
+                className={styles.input}
+                type="password"
+                placeholder="Confirm Password"
+                name="confirmPassword"
+                value={userData.confirmPassword}
+                onChange={handleChange}
+              />
+              {errors.confirmPassword && (
+                <p className={styles.error}>{errors.confirmPassword}</p>
+              )}
             </div>
-            <div className={styles.input_container}>{renderStep()}</div>
-            <div className={styles.navigation_container}>
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={handlePrevStep}
-                  className={styles.nav_button}
-                >
-                  <ArrowLeft size={20} /> Back
-                </button>
-              )}
-              {step === 1 && (
-                <button type="submit" className={styles.nav_button}>
-                  Next <ArrowRight size={20} />
-                </button>
-              )}
-              {step === 2 && (
-                <button type="submit" className={styles.nav_button}>
-                  Verify Email <ArrowRight size={20} />
-                </button>
-              )}
-              {step === 3 && (
-                <button type="submit" className={styles.button_primary}>
-                  Complete Registration
-                </button>
-              )}
-            </div>
-          </form>
+            <button onClick={handleSubmit} className={styles.button_primary}>
+              Register
+            </button>
+          </div>
         </div>
       </div>
     </React.Fragment>

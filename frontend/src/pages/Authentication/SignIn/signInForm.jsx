@@ -3,6 +3,8 @@ import styles from "./styles/signIn.module.scss";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 import axios from "redaxios";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LoaderStyles from "../../UserProfile/styles/page.module.scss";
 
 export default function SignInPage() {
@@ -80,11 +82,16 @@ export default function SignInPage() {
       } else if (err.response?.data?.msg === "Incorrect password") {
         setErrorStatus({ email: false, password: true });
       } else {
-        alert("Error signing in");
+        console.error("Error signing in");
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    setIsLoading(true);
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
   };
 
   return (
@@ -128,11 +135,6 @@ export default function SignInPage() {
               </div>
 
               <div className={styles.misc_fields}>
-                <label className={styles.custom_checkbox} htmlFor="rememberMe">
-                  <input type="checkbox" id="rememberMe" />
-                  <span className={styles.checkbox_label}>Remember Me</span>
-                </label>
-
                 <a className={styles.forgetPassLink} href="/forgetPassword">
                   Forgot password?
                 </a>
@@ -149,6 +151,16 @@ export default function SignInPage() {
               <div className={styles.line}></div>
               <div className={styles.or_text}>or</div>
               <div className={styles.line}></div>
+            </div>
+
+            <div className={styles.google_login_container}>
+              <button
+                onClick={handleGoogleLogin}
+                className={`${styles.button_secondary} ${styles.google_login_button}`}
+              >
+                <FontAwesomeIcon icon={faGoogle} />
+                Login with Google
+              </button>
             </div>
 
             <div className={styles.register_link_container}>

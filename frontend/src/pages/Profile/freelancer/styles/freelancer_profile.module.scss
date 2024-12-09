@@ -1,0 +1,374 @@
+@use "../../../../styles/base" as base;
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f9f9f9;
+  position: absolute;
+}
+
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid base.$primary;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #555;
+}
+
+.coverPictureContainer {
+  width: 100%;
+  height: 300px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  .coverPictureLabel {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: #f0f0f0;
+    padding: 8px;
+    // border-radius: 50%;
+    cursor: pointer;
+  }
+}
+
+.mainProfileWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  padding: 0 50px;
+  margin-bottom: 150px;
+
+  .profilePictureAndDetailsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    gap: 15px;
+  }
+  .profileContainer {
+    position: relative;
+    top: -150px;
+    width: 100%;
+    padding: 50px;
+    background-color: #ffffff;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    width: 100%;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 50px;
+    justify-content: flex-start;
+    height: 200vh;
+
+    .profileOverviewContainer {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .profileDetailsContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      .profileName {
+        font-size: 30px;
+        margin-bottom: 5px;
+      }
+      .profileLocation,
+      .profileJoined {
+        opacity: 0.7;
+        // margin-bottom: 5px;
+      }
+    }
+
+    .profilePictureContainer {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      position: relative;
+
+      img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      .profilePictureLabel {
+        width: 190px;
+        position: absolute;
+        bottom: 100px;
+        text-align: center;
+        right: 30px;
+        background-color: base.$background_light;
+        padding: 8px;
+        border-radius: 0 0 100% 100%;
+        cursor: pointer;
+      }
+    }
+
+    .gigsWrapper {
+      width: 100%;
+      background-color: cornsilk;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 50px;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+  }
+}
+
+.profileStatsContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+.profileInfo {
+  font-family: Arial, sans-serif;
+  width: 430px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  .infoBox {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    // margin-bottom: 15px;
+    width: 100%;
+  }
+
+  .infoTitle {
+    font-size: 14px;
+    color: #888;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+
+    .stars {
+      color: #000000;
+      margin-right: 10px;
+    }
+
+    .star {
+      font-size: 24px;
+    }
+
+    .ratingScore {
+      font-size: 24px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .reviewCount {
+      color: #888;
+      font-size: 14px;
+    }
+  }
+
+  .skillsList,
+  .languagesList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .skill,
+    .language {
+      background-color: #f0f0f0;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 14px;
+    }
+  }
+}
+
+.profileTabs {
+  font-family: "Inter", sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+
+  .tabsContainer {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+
+    .tab {
+      padding: 10px 0px 10px 0px;
+      border: none;
+      margin-right: 20px;
+      background: none;
+      font-size: 22px;
+      font-family: "Inter", sans-serif;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+
+      &.active {
+        opacity: 1;
+        border-bottom: 1px solid #000000;
+      }
+    }
+  }
+
+  .tabContent {
+    .aboutContent {
+      p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+        color: #333;
+      }
+    }
+  }
+}
+
+.aboutContent {
+  .aboutText {
+    font-size: 18px;
+    line-height: 1.6;
+    font-family: "Inter", sans-serif;
+  }
+}
+
+.profilePictureContainer {
+  position: relative;
+
+  .editIconWrapper {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      background-color: #f0f0f0;
+    }
+  }
+}
+
+.infoTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .editIconButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.editIcon {
+  width: 14px;
+  height: 14px;
+  color: #666;
+}
+
+.editInput {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+
+  input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+}
+
+.skill,
+.language {
+  position: relative;
+
+  .removeBtn {
+    background: none;
+    border: none;
+    color: #ff0000;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 5px;
+    font-size: 16px;
+  }
+}
+
+.saveBtn {
+  display: block;
+  margin-top: 10px;
+  padding: 5px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

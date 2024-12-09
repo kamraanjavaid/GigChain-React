@@ -7,11 +7,29 @@ const socketIO = require("socket.io");
 const Message = require("./models/Message");
 const Proposal = require("./models/Proposal");
 const Negotiation = require("./models/Negotiation");
+const passport = require("passport");
+const session = require("express-session");
 
 const env = process.env.NODE_ENV || "development";
 dotenv.config({ path: `.env.${env}` });
-
 const app = express();
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+require("./config/passport");
+
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: { origin: process.env.FRONTEND_URL },
@@ -20,9 +38,12 @@ const io = socketIO(server, {
 
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-
-app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 
 mongoose
   .connect(process.env.MONGODB_URI, {})
@@ -105,6 +126,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("negotiation-update", async (data, callback) => {
+    console.log("Negotiation update event received");
     try {
       const { conversationId, sender, budget, deadline, notes } = data;
 
@@ -141,16 +163,16 @@ io.on("connection", (socket) => {
         const systemMessage = new Message({
           conversationId,
           sender: sender,
-          content: JSON.stringify({
-            type: "negotiation_update",
-            negotiation_ref: newNegotiation._id,
+          metadata: {
+            type: "update",
+            negotiationId: newNegotiation._id,
             round: 0,
             changes: {
               budget,
               deadline,
               notes,
             },
-          }),
+          },
           messageType: "negotiation",
         });
 
@@ -279,14 +301,19 @@ app.get("/", (req, res) => {
 });
 
 const userRoutes = require("./routes/users");
-
 app.use("/api/users", cors(), userRoutes);
+
+const authRoutes = require("./routes/auth");
+app.use("/api/auth", cors(), authRoutes);
 
 const gigRoutes = require("./routes/gig");
 app.use("/api/gig", cors(), gigRoutes);
 
 const serviceRoutes = require("./routes/services");
-app.use("/api/service", cors(), serviceRoutes);
+app.use("/api/services", cors(), serviceRoutes);
+
+const projectRoutes = require("./routes/projects");
+app.use("/api/projects", cors(), projectRoutes);
 
 const messageRoutes = require("./routes/conversations");
 app.use("/api/conversations", cors(), messageRoutes);

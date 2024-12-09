@@ -176,3 +176,24 @@
     border-color: base.$primary;
   }
 }
+
+.errorInput {
+  border-color: #ff4444;
+  background-color: #fff8f8;
+}
+
+.errorText {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  display: block;
+}
+
+select.inputField {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,...");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem top 50%;
+  background-size: 0.65rem auto;
+}

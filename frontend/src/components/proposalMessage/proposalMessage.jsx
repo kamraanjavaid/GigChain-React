@@ -1,23 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./styles/proposalMessage.module.scss";
 import { useAuth } from "../../contexts/AuthContext";
-import { NegotiationModal } from "../Negotiation/negotiationModal/negotiationModal";
-import { NegotiationButton } from "../Negotiation/negotiationButton/negotiationButton";
+import axios from "axios";
+// import LoadingUI from "../inboxSidebar/loadingUI/loadingUI";
 
 const ProposalMessage = ({
   message,
   setIsNegotiationModalOpen,
   setCurrentProposal,
+  setIsLoading,
 }) => {
   const { currentUser } = useAuth();
-
-  const currentUserId = currentUser._id;
+  const navigate = useNavigate();
+  const currentUserId = currentUser._id || currentUser?.id;
 
   const { sender } = message;
 
-  const isCurrentUser = currentUserId === sender;
+  console.log("Message", message);
 
-  console.log("Current user id and sender id", currentUserId, sender);
+  const { conversationId } = message;
+  const [conversationDetails, setConversationDetails] = useState(null);
+
+  const isCurrentUser = currentUserId === sender;
+  const projectStatus = conversationDetails?.status;
+
   const { messageText, budget, deadline } = message.proposal;
   setCurrentProposal(message.proposal);
 
@@ -37,16 +44,80 @@ const ProposalMessage = ({
     return formattedDate;
   };
 
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const fetchConversationDetails = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/conversations/${conversationId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setConversationDetails(response.data);
+        console.log("conversation details", response.data);
+      } catch (error) {
+        console.error("Error fetching conversation details:", error);
+      }
+    };
+
+    fetchConversationDetails();
+  }, [conversationId]);
+
+  const handleAccept = async () => {
+    try {
+      const projectData = {
+        serviceId: conversationDetails.serviceId._id,
+        employerId: sender,
+        freelancerId: currentUser._id,
+        conversationId: message.conversationId,
+        status: "in_progress",
+        budget: message.proposal.budget,
+        deadline: message.proposal.deadline,
+        proposalId: message.proposal._id,
+      };
+
+      console.log("project data", projectData);
+
+      const token = localStorage.getItem("token");
+
+      console.log("token", token);
+
+      setIsLoading(true);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/projects/accept-proposal`,
+        projectData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Project created successfully", response.data);
+        navigate("/projects");
+      }
+    } catch (error) {
+      console.error("Error accepting proposal:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <div
-        className={`${styles.proposalMessage} ${
+        className={`${styles.proposalMessage}  ${
           isCurrentUser ? styles.sent : styles.received
-        }`}
+        } ${message.proposal.status === "accepted" ? styles.accepted : ""}`}
       >
         <div className={styles.statusBadge}>
           <span className={styles.dot}></span>
-          Proposal expires in 48h
+          Proposal
         </div>
 
         <p className={styles.messageText}>{messageText}</p>
@@ -72,22 +143,26 @@ const ProposalMessage = ({
           </div>
         </div>
 
-        {!isCurrentUser && (
+        {!isCurrentUser && projectStatus !== "accepted" ? (
           <div className={styles.buttonsContainer}>
             <button
               className={`${styles.button} ${styles.counterOffer}`}
               onClick={() => {
                 setIsNegotiationModalOpen(true);
+                console.log("Counter offer button clicked");
               }}
             >
               Counter Offer
             </button>
 
-            <button className={`${styles.button} ${styles.accept}`}>
+            <button
+              className={`${styles.button} ${styles.accept}`}
+              onClick={handleAccept}
+            >
               Accept
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

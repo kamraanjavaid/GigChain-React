@@ -74,6 +74,7 @@ export const ChatProvider = ({ children }) => {
   };
 
   const handleNegotiation = async (negotiationData) => {
+    console.log("Negotiation handler called in ChatContext");
     const currentUserId = currentUser?._id || currentUser?.id;
 
     if (activeConversation) {
@@ -110,12 +111,26 @@ export const ChatProvider = ({ children }) => {
         }
       );
       const data = await response.json();
-      setConversations(data);
+
+      if (currentUser?.userType === "freelancer") {
+        const filteredConversations = data.filter((convo) => {
+          return convo.freelancerId === currentUser._id || currentUser?.id;
+      });
+        setConversations(filteredConversations);
+        console.log("Filtered conversations:", filteredConversations);
+      } else if (currentUser?.userType === "employer") {
+        const filteredConversations = data.filter((convo) => {
+          return convo.employerId === currentUser._id || currentUser?.id;
+        });
+        setConversations(filteredConversations);
+        console.log("Filtered conversations:", filteredConversations);
+      }
+
       console.log("Conversations fetched: ", data);
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }
-  }, []);
+  }, [currentUser]);
 
   const handleSelectConversation = (id) => {
     console.log("Selected conversation:", id);
@@ -213,19 +228,22 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  const fetchMessages = async (conversationId) => {
-    const response = await fetch(
-      `${
-        import.meta.env.VITE_API_URL
-      }/api/conversations/${conversationId}/messages`,
-      {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      }
-    );
-    const data = await response.json();
-    setMessages(data);
-    console.log("Messages fetched: ", data);
-  };
+  const fetchMessages = useCallback(
+    async (conversationId) => {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/conversations/${conversationId}/messages`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await response.json();
+      setMessages(data);
+      console.log("Messages fetched: ", data);
+    },
+    [currentUser]
+  );
 
   const handleUserSelect = async (userId) => {
     if (userId === currentUser.id) {

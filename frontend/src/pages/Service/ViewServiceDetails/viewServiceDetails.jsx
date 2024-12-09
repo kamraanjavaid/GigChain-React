@@ -39,7 +39,7 @@ const ViewServiceDetails = () => {
     const recordClick = async () => {
       try {
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/service/${serviceId}/click`
+          `${import.meta.env.VITE_API_URL}/api/services/${serviceId}/click`
         );
       } catch (error) {
         console.error("Error recording click:", error);
@@ -52,10 +52,12 @@ const ViewServiceDetails = () => {
     const fetchServiceDetails = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/service/${serviceId}`
+          `${import.meta.env.VITE_API_URL}/api/services/${serviceId}`
         );
         setServiceDetails(response.data.service);
         setProviderDetails(response.data.provider);
+        console.log("serviceDetails", response.data.service);
+        console.log("providerDetails", response.data.provider);
         setBudget(response.data.service.startingPrice);
       } catch (error) {
         console.error("Error fetching service details:", error);
@@ -109,7 +111,6 @@ const ViewServiceDetails = () => {
         localStorage.setItem("activeConversation", conversationId);
         navigate("/inbox");
         return;
-
       } else {
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/api/conversations`,
@@ -120,8 +121,9 @@ const ViewServiceDetails = () => {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({
-              participant: serviceDetails.user,
+              freelancerId: providerDetails._id,
               serviceId: serviceDetails._id,
+              employerId: currentUserId,
               proposal: {
                 messageText: message,
                 budget: budget,
@@ -131,13 +133,14 @@ const ViewServiceDetails = () => {
           }
         );
         const data = await response.json();
-        conversationId = data._id;
+        console.log("data", data);
+        conversationId = data;
 
         localStorage.setItem("activeConversation", conversationId);
         navigate("/inbox");
 
         // handleSendProposalMessage(message, conversationId).catch((error) => {
-          // console.error("Error sending proposal message:", error);
+        // console.error("Error sending proposal message:", error);
         // });
       }
     } catch (err) {

@@ -120,40 +120,16 @@
         width: 100%;
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
-
-        .custom_checkbox input[type="checkbox"] {
-          display: none;
-        }
-
-        .custom_checkbox .checkbox_label:before {
-          content: "";
-          display: inline-block;
-          margin-right: 10px;
-          width: 16px;
-          height: 16px;
-          border: 1px solid #ddd;
-          background-color: #fff;
-          vertical-align: middle;
-        }
-
-        .custom_checkbox
-          input[type="checkbox"]:checked
-          + .checkbox-label:before {
-          background-color: #bada55;
-        }
-
-        .custom_checkbox .checkbox_label {
-          cursor: pointer;
-          color: base.$black;
-        }
+        justify-content: flex-end;
 
         p {
           font: base.$p_small;
           color: base.$primary;
+          // opacity: 0.5;
         }
         .forgetPassLink {
           color: base.$black;
+          // opacity: 0.7;
         }
       }
 
@@ -203,5 +179,22 @@
       font: base.$p_large;
       color: base.$background;
     }
+  }
+}
+
+.google_login_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  .google_login_button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    background-color: base.$white;
   }
 }

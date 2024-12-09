@@ -16,7 +16,7 @@ function FeaturedServicesSection({ serviceType }) {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/service/category/${category}`
+          `${import.meta.env.VITE_API_URL}/api/services/category/${category}`
         );
         setServices(response.data);
       } catch (error) {

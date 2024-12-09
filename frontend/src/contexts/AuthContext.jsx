@@ -13,8 +13,16 @@ export const AuthProvider = ({ children }) => {
   function login(userData) {
     localStorage.setItem("token", userData.token);
     setCurrentUser(userData.user);
+    updateUserRole(userData.user.userType);
     console.log("Current user:", currentUser);
     setLoading(false);
+  }
+
+  function updateUserRole(newRole) {
+    setCurrentUser((prev) => ({
+      ...prev,
+      userType: newRole,
+    }));
   }
 
   function loginGoogle(userData) {
@@ -38,9 +46,6 @@ export const AuthProvider = ({ children }) => {
       console.log("Current user:", user);
     } catch (error) {
       console.error("Failed to login with Google:", error);
-      // Optionally, you can implement a user-facing notification here
-      // For example, using a toast notification library
-      // toast.error("Google login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -50,6 +55,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setCurrentUser(null);
   }
+
+  useEffect(() => {
+    console.log("Current user:", currentUser);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -73,6 +82,7 @@ export const AuthProvider = ({ children }) => {
           const data = await response.json();
           console.log("Data from fetchUser:", data.user);
           setCurrentUser(data.user);
+          updateUserRole(data.user.userType);
         } catch (error) {
           console.log("Failed to fetch user:", error);
           console.error("Error details:", error.message);
@@ -94,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     loginGoogle,
     logout,
     loading,
+    updateUserRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
