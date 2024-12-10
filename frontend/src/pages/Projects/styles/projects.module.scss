@@ -4,6 +4,8 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background-color: base.$background;
+  // width: 100%;
 }
 
 .header {
@@ -25,7 +27,7 @@
 .tab {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -51,7 +53,7 @@
 
 .projectCard {
   background: white;
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 1.5rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;

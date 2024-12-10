@@ -1,12 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import styles from "./styles/projectInfoSidebar.module.scss";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const ProjectInfoSidebar = ({ currentUser, conversationId }) => {
   const [projectInfo, setProjectInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   // const { currentUser } = useAuth;
   const [error, setError] = useState(null);
   const [proposalDetails, setProposalDetails] = useState(null);
@@ -50,7 +52,7 @@ const ProjectInfoSidebar = ({ currentUser, conversationId }) => {
         setProjectInfo(response.data);
 
         const employer = response.data.participants.find(
-          (user) => user._id !== currentUser._id
+          (user) => user._id.toString() !== currentUser._id.toString()
         );
 
         fetchProposalDetails();
@@ -106,7 +108,12 @@ const ProjectInfoSidebar = ({ currentUser, conversationId }) => {
       )}
 
       {projectInfo?.status === "accepted" && (
-        <button className={styles.buttonPrimary}>Submit Deliverable</button>
+        <button
+          onClick={() => navigate(`/projects/${projectInfo.projectId}`)}
+          className={styles.buttonPrimary}
+        >
+          Open Project
+        </button>
       )}
     </div>
   );

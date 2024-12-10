@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useWeb3 } from "../../contexts/Web3Context";
 import { useNavigate } from "react-router-dom";
 import styles from "./styles/proposalMessage.module.scss";
 import { useAuth } from "../../contexts/AuthContext";
@@ -14,6 +15,11 @@ const ProposalMessage = ({
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const currentUserId = currentUser._id || currentUser?.id;
+
+  const { connectWallet, account } = useWeb3();
+
+  console.log("connectWallet:", connectWallet);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { sender } = message;
 
@@ -69,15 +75,29 @@ const ProposalMessage = ({
 
   const handleAccept = async () => {
     try {
+      setIsProcessing(true);
+
+      console.log("account", account);
+
+      // if (!account) {
+      //   try {
+      //     await connectWallet();
+      //   } catch (error) {
+      //     alert("Please connect your MetaMask wallet to continue");
+      //     return;
+      //   }
+      // }
+
       const projectData = {
         serviceId: conversationDetails.serviceId._id,
         employerId: sender,
         freelancerId: currentUser._id,
         conversationId: message.conversationId,
-        status: "in_progress",
+        status: "pending",
         budget: message.proposal.budget,
         deadline: message.proposal.deadline,
         proposalId: message.proposal._id,
+        walletAddress: account,
       };
 
       console.log("project data", projectData);
@@ -98,8 +118,23 @@ const ProposalMessage = ({
       );
 
       if (response.status === 200) {
-        console.log("Project created successfully", response.data);
         navigate("/projects");
+        // try {
+        //   console.log("response.data", response.data.project);
+        //   const contractResponse = await axios.post(
+        //     `${import.meta.env.VITE_API_URL}/api/projects/${response.data.project._id}/deploy-contract`,
+        //     {},
+        //     {
+        //       headers: { Authorization: `Bearer ${token}` },
+        //     }
+        //   );
+        //   if (contractResponse.data.success) {
+        //     navigate("/projects");
+        //   }
+        // } catch (error) {
+        //   console.error("Error deploying contract:", error);
+        //   alert("Error creating smart contract. Please try again.");
+        // }
       }
     } catch (error) {
       console.error("Error accepting proposal:", error);

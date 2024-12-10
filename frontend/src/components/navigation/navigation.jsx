@@ -118,9 +118,6 @@ export default function Navigation() {
         <h1 className={styles.logo}>GigChain</h1>
 
         <div className={styles.navbar_right}>
-          <Link to="/" className={styles.navbar_link}>
-            <i className="fas fa-home"></i> Home
-          </Link>
           {!currentUser && (
             <>
               <Link to="/signIn" className={styles.navbar_link}>
@@ -148,6 +145,12 @@ export default function Navigation() {
               <Link to="/services" className={styles.navbar_link}>
                 <i className="fas fa-briefcase"></i> Services
               </Link>
+              <Link
+                to={`/freelancer-profile/${currentUser._id}`}
+                className={styles.navbar_link}
+              >
+                <i className="fas fa-user"></i> Profile
+              </Link>
               <div className={styles.avatar_container} ref={avatarMenuRef}>
                 <button
                   className={styles.avatar_button}
@@ -161,10 +164,6 @@ export default function Navigation() {
                 </button>
                 {showAvatarMenu && (
                   <div className={styles.avatar_menu}>
-                    <Link to="/profile" className={styles.avatar_menu_item}>
-                      <i className="fas fa-user"></i> Profile
-                    </Link>
-
                     {currentUser.userType === "freelancer" ? (
                       <button
                         onClick={handleSwitchToEmployer}
@@ -221,6 +220,10 @@ export default function Navigation() {
                   <i className="fas fa-search"></i>
                 </button>
               </div>
+
+              <Link to="/" className={styles.navbar_link}>
+                <i className="fas fa-home"></i> Home
+              </Link>
               <Link to="/inbox" className={styles.navbar_link}>
                 <div className={styles.inbox_container}>
                   <i className="fas fa-comments"></i> Inbox

@@ -21,11 +21,34 @@ const UserSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     verificationCode: String,
     verificationCodeExpires: Date,
+    location: {
+      timezone: String,
+    },
+
+    walletAddress: {
+      type: String,
+      unique: true,
+      sparse: true,
+      required: false,
+    },
+
+    transactions: [
+      {
+        hash: String,
+        type: {
+          type: String,
+          enum: ["project_creation", "project_completion"],
+        },
+        projectId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Project",
+        },
+        timestamp: Date,
+      },
+    ],
   },
   {
     timestamps: true,
-  },
-  {
     toJSON: {
       virtuals: true,
     },

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import styles from "./styles/categoryGigResults.module.scss";
-import GigCard from "../../components/featuredGigCard/featuredGigCard";
+import ServiceCard from "../../components/serviceCard/serviceCard";
 
 const GigList = () => {
   const { mainCategory, subCategory } = useParams();
@@ -18,7 +18,7 @@ const GigList = () => {
         const response = await axios.get(
           `${
             import.meta.env.VITE_API_URL
-          }/api/gig/category/${mainCategory}/${subCategory}`
+          }/api/services/category/${mainCategory}/${subCategory}`
         );
         setGigs(response.data);
         setIsLoading(false);
@@ -41,16 +41,16 @@ const GigList = () => {
   }
 
   if (gigs.length === 0) {
-    return <div>No gigs found for the selected category.</div>;
+    return <div>No services found for the selected category.</div>;
   }
 
   return (
     <>
       <div className={styles.gigListWrapper}>
-        <h2 className={styles.heading}>Gigs in {subCategory}</h2>
+        <h2 className={styles.heading}>Services in {subCategory}</h2>
         <div className={styles.gigListContent}>
           {gigs.map((service, index) => (
-            <GigCard key={index} service={service} />
+            <ServiceCard key={index} service={service} />
 
             //   <li key={gig._id} className={styles.gigItem}>
             //     <img src={gig.thumbnailUrl} alt={gig.title} className={styles.gigThumbnail} />

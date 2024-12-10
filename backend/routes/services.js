@@ -24,21 +24,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// const upload = multer({
-//   storage: multerS3({
-//     s3: s3,
-//     bucket: process.env.AWS_BUCKET_NAME,
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     // acl: 'public-read',
-//     key: function (req, file, cb) {
-//       cb(null, Date.now().toString() + "-" + file.originalname);
-//     },
-//   }),
-//   limits: {
-//     fileSize: 5 * 1024 * 1024,
-//   },
-// }).array("images", 5);
-
 const upload = multer({
   storage: multerS3({
     s3: s3,
@@ -118,7 +103,6 @@ router.get("/category/:mainCategory/:subCategory", async (req, res) => {
 // });
 
 router.get("/category/:category", async (req, res) => {
-  // console.log("Fetching featured services");
   const { category } = req.params;
   try {
     const services = await Service.find({ category })
@@ -172,15 +156,24 @@ router.get("/user", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/get-services/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const services = await Service.find({ user: userId });
+    res.status(200).json({ services });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
 router.use((req, res, next) => {
   console.log("Incoming request:", req.method, req.url);
   console.log("Request headers:", req.headers);
   console.log("Request body:", req.body);
   next();
 });
-
-// const ethers = require("ethers");
-// const ServiceFactoryArtifact = require("../../smart-contracts/artifacts/contracts/ServiceFactory.sol/ServiceFactory.json");
 
 router.post(
   "/create",

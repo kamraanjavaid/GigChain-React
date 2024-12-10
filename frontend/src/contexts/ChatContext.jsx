@@ -112,21 +112,51 @@ export const ChatProvider = ({ children }) => {
       );
       const data = await response.json();
 
+      // const filterConversations = async (convo, currentUser) => {
+      //   if (currentUser?.userType === "freelancer") {
+      //     return convo.freelancerId === currentUser?._id || currentUser?.id;
+      //   } else if (currentUser?.userType === "employer") {
+      //     return convo.employerId === currentUser?._id || currentUser?.id;
+      //   }
+      // };
+
+      console.log("Conversations fetched: ", data);
+
+      console.log("Current userType: ", currentUser?.userType);
+
       if (currentUser?.userType === "freelancer") {
+        console.log("Filtering conversations for freelancer");
         const filteredConversations = data.filter((convo) => {
-          return convo.freelancerId === currentUser._id || currentUser?.id;
-      });
+          console.log("Convo freelancerId: ", convo.freelancerId);
+          console.log("Current userId: ", currentUser?._id);
+
+          const freelancerId = convo.freelancerId.toString();
+          const currentUserId = (
+            currentUser?._id || currentUser?.id
+          ).toString();
+
+          console.log("Comparing:", freelancerId, currentUserId);
+          return freelancerId === currentUserId;
+        });
         setConversations(filteredConversations);
         console.log("Filtered conversations:", filteredConversations);
       } else if (currentUser?.userType === "employer") {
+        console.log("Filtering conversations for employer");
         const filteredConversations = data.filter((convo) => {
-          return convo.employerId === currentUser._id || currentUser?.id;
+          console.log("Convo employerId: ", convo.employerId);
+          console.log("Current userId: ", currentUser?._id);
+
+          const employerId = convo.employerId.toString();
+          const currentUserId = (
+            currentUser?._id || currentUser?.id
+          ).toString();
+
+          console.log("Comparing:", employerId, currentUserId);
+          return employerId === currentUserId;
         });
         setConversations(filteredConversations);
         console.log("Filtered conversations:", filteredConversations);
       }
-
-      console.log("Conversations fetched: ", data);
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }

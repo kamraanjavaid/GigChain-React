@@ -4,9 +4,11 @@ import { useAuth } from "../../../contexts/AuthContext";
 import axios from "axios";
 import styles from "./styles/freelancer_profile.module.scss";
 import { FaPen } from "react-icons/fa";
+import ServiceCard from "../../../components/serviceCard/serviceCard";
 
 const FreelancerProfile = () => {
   const { currentUser } = useAuth();
+  const { userId } = useParams();
 
   console.log(currentUser);
 
@@ -20,6 +22,7 @@ const FreelancerProfile = () => {
   const [skills, setSkills] = useState(userDetails?.skills || []);
   const [languages, setLanguages] = useState(userDetails?.languages || []);
   const [newItem, setNewItem] = useState("");
+  const [services, setServices] = useState([]);
   const [profilePicture, setProfilePicture] = useState(
     userDetails?.profilePictureUrl
   );
@@ -69,15 +72,13 @@ const FreelancerProfile = () => {
     languages: false,
   });
 
-  const tabs = ["About", "Gigs", "Reviews"];
+  const tabs = ["About", "Services", "Reviews"];
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
 
   console.log("User Details: ", userDetails);
-
-  const userId = currentUser.id || currentUser._id;
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -99,7 +100,19 @@ const FreelancerProfile = () => {
       }
     };
 
+    const fetchServices = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/services/get-services/${userId}`
+        );
+        setServices(response.data.services);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
     fetchUserDetails();
+    fetchServices();
   }, [currentUser, profilePicture]);
 
   if (!currentUser) {
@@ -399,10 +412,15 @@ const FreelancerProfile = () => {
                         </p>
                       </div>
                     )}
-                    {/* Add content for other tabs here when needed */}
+                    {activeTab === "Services" && (
+                      <div className={styles.servicesContainer}>
+                        {services.map((service) => (
+                          <ServiceCard service={service} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-                );
               </div>
             </div>
           </div>

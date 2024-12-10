@@ -8,6 +8,10 @@ const deliverableSchema = new mongoose.Schema({
   submittedAt: {
     type: Date,
   },
+  fileUrl: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["pending", "submitted", "accepted", "revision_requested"],
@@ -86,12 +90,89 @@ const projectSchema = new mongoose.Schema({
 
   clientReview: reviewSchema,
   deliverables: [deliverableSchema],
+
+  contractAddress: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
+  contractStatus: {
+    type: String,
+    enum: ["not_created", "created", "funded", "completed", "disputed"],
+    default: "not_created",
+  },
+
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "escrow_funded", "released", "refunded"],
+    default: "pending",
+  },
+
+  transactionHash: {
+    contractCreation: String,
+    escrowFunding: String,
+    paymentRelease: String,
+  },
+  blockchainLogs: [
+    {
+      event: {
+        type: String,
+        enum: [
+          "contract_created",
+          "contract_funded",
+          "contract_completed",
+          "contract_disputed",
+        ],
+      },
+      timestamp: Date,
+      transactionHash: String,
+      initiatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+  ],
 });
 
 projectSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
+
+projectSchema.methods.updateContractStatus = async function (status, txHash) {
+  this.contractStatus = status;
+  if (txHash) {
+    this.blockchainLogs.push({
+      event: `contract_${status}`,
+      timestamp: new Date(),
+      transactionHash: txHash,
+    });
+  }
+  return this.save();
+};
+
+projectSchema.methods.updatePaymentStatus = async function (status, txHash) {
+  this.paymentStatus = status;
+  if (txHash) {
+    this.transactionHash[status] = txHash;
+  }
+  return this.save();
+};
+
+projectSchema.methods.addBlockchainLog = async function (
+  event,
+  txHash,
+  userId
+) {
+  this.blockchainLogs.push({
+    event,
+    timestamp: new Date(),
+    transactionHash: txHash,
+    initiatedBy: userId,
+  });
+  return this.save();
+};
 
 const Project = mongoose.model("Project", projectSchema);
 

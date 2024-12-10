@@ -72,8 +72,23 @@ const Projects = () => {
             </div>
             <div className={styles.projectInfo}>
               <div className={styles.infoItem}>
-                <span className={styles.label}>Client:</span>
-                <span>{project.employerId.name}</span>
+                {currentUser.userType === "freelancer" ? (
+                  <>
+                    <span className={styles.label}>Employer:</span>
+                    <span>
+                      {project.employerId.firstName}{" "}
+                      {project.employerId.lastName}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.label}>Freelancer:</span>
+                    <span>
+                      {project.freelancerId.firstName}{" "}
+                      {project.freelancerId.lastName}
+                    </span>
+                  </>
+                )}
               </div>
               <div className={styles.infoItem}>
                 <span className={styles.label}>Budget:</span>

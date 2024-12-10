@@ -216,7 +216,7 @@ const ViewServiceDetails = () => {
             <div className={styles.profileTopContainer}>
               <div className={styles.profilePicAndRatingContainer}>
                 <div className={styles.profilePicContainer}>
-                  <Link to={`/user/${serviceDetails.user}`}>
+                  <Link to={`/freelancer-profile/${serviceDetails.user}`}>
                     <img
                       src={providerDetails.profilePictureUrl}
                       alt={providerDetails.username}
