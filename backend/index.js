@@ -26,7 +26,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 require("./config/passport");
 
@@ -40,11 +40,12 @@ const PORT = process.env.PORT || 5000;
 
 // app.use(cors());
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 mongoose
   .connect(process.env.MONGODB_URI, {})
@@ -305,19 +306,19 @@ const userRoutes = require("./routes/users");
 app.use("/api/users", userRoutes);
 
 const authRoutes = require("./routes/auth");
-app.use("/api/auth",  authRoutes);
+app.use("/api/auth", authRoutes);
 
 const gigRoutes = require("./routes/gig");
 app.use("/api/gig", gigRoutes);
 
 const serviceRoutes = require("./routes/services");
-app.use("/api/services",  serviceRoutes);
+app.use("/api/services", serviceRoutes);
 
 const projectRoutes = require("./routes/projects");
 app.use("/api/projects", projectRoutes);
 
 const messageRoutes = require("./routes/conversations");
-app.use("/api/conversations",  messageRoutes);
+app.use("/api/conversations", messageRoutes);
 
 const negotiationRoutes = require("./routes/negotiations");
 app.use("/api/negotiations", negotiationRoutes);
