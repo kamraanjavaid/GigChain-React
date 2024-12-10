@@ -70,9 +70,9 @@ export default function SignInPage() {
         }
       } else if (user.userType === "employer") {
         if (hasConversations) {
-          navigate("/inbox");
+          navigate("/");
         } else {
-          navigate("/services_directory");
+          navigate("/");
         }
       }
     } catch (err) {

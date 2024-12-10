@@ -38,7 +38,13 @@ const io = socketIO(server, {
 
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// app.use(cors());
+
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true
+}));
 
 mongoose
   .connect(process.env.MONGODB_URI, {})
@@ -296,24 +302,24 @@ app.get("/", (req, res) => {
 });
 
 const userRoutes = require("./routes/users");
-app.use("/api/users", cors(), userRoutes);
+app.use("/api/users", userRoutes);
 
 const authRoutes = require("./routes/auth");
-app.use("/api/auth", cors(), authRoutes);
+app.use("/api/auth",  authRoutes);
 
 const gigRoutes = require("./routes/gig");
-app.use("/api/gig", cors(), gigRoutes);
+app.use("/api/gig", gigRoutes);
 
 const serviceRoutes = require("./routes/services");
-app.use("/api/services", cors(), serviceRoutes);
+app.use("/api/services",  serviceRoutes);
 
 const projectRoutes = require("./routes/projects");
-app.use("/api/projects", cors(), projectRoutes);
+app.use("/api/projects", projectRoutes);
 
 const messageRoutes = require("./routes/conversations");
-app.use("/api/conversations", cors(), messageRoutes);
+app.use("/api/conversations",  messageRoutes);
 
 const negotiationRoutes = require("./routes/negotiations");
-app.use("/api/negotiations", cors(), negotiationRoutes);
+app.use("/api/negotiations", negotiationRoutes);
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
