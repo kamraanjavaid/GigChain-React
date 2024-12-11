@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./styles/signIn.module.scss";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
-import axios from "redaxios";
+import axios from "axios";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LoaderStyles from "../../UserProfile/styles/page.module.scss";
