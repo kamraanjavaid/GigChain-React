@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import axios from "redaxios";
+import axios from "axios";
 import styles from "./styles/profile.module.scss";
 
 

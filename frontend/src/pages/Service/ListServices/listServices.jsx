@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
-import axios from "redaxios";
+import axios from "axios";
 import styles from "./styles/listServices.module.scss";
 
 const ListServices = () => {

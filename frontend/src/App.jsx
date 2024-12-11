@@ -30,7 +30,6 @@ import AuthRedirect from "./components/authRedirect/authRedirect";
 import { useAuth } from "./contexts/AuthContext";
 import ViewFreelancerService from "./pages/Service/ViewFreelancerService/viewFreelancerService";
 import FreelancerProfile from "./pages/Profile/freelancer/freelancer_profile";
-import { Web3Provider } from "./contexts/Web3Context";
 
 function AppContent() {
   const { currentUser } = useAuth();
@@ -178,9 +177,7 @@ function App() {
     <Router>
       <AuthProvider>
         <ChatProvider>
-          <Web3Provider>
-            <AppContent />
-          </Web3Provider>
+          <AppContent />
         </ChatProvider>
       </AuthProvider>
     </Router>

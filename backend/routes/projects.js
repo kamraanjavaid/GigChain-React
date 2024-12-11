@@ -5,7 +5,6 @@ const Conversation = require("../models/Conversation");
 const Service = require("../models/Service");
 const Proposal = require("../models/Proposal");
 const authMiddleware = require("../middleware/auth");
-const contractService = require("../utils/contractService");
 const AWS = require("aws-sdk");
 const multer = require("multer");
 const multerS3 = require("multer-s3");

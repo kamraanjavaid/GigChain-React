@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "redaxios";
+import axios from "axios";
 import styles from "./styles/registerationForm.module.scss";
 import { Link } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
