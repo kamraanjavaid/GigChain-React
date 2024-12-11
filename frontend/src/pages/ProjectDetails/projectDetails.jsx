@@ -6,7 +6,6 @@ import styles from "./styles/projectDetails.module.scss";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ChatContext } from "../../contexts/ChatContext";
-import { useWeb3 } from "../../contexts/Web3Context";
 import { ethers } from "ethers";
 import MetaMaskComponent from "../../components/metaMaskpayment/paymentComponent";
 
@@ -26,9 +25,12 @@ const ProjectDetails = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const { account, contract, connectWallet } = useWeb3();
   const [paymentStatus, setPaymentStatus] = useState("pending");
   const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
 
   useEffect(() => {
     try {
@@ -61,68 +63,6 @@ const ProjectDetails = () => {
       </div>
     );
   }
-
-  const handleFundProject = async () => {
-    if (!account) {
-      await connectWallet();
-      return;
-    }
-
-    try {
-      setPaymentLoading(true);
-      const projectId = ethers.utils.id(project._id.toString());
-      const amount = ethers.utils.parseEther(project.budget.toString());
-
-      const tx = await contract.fundProject(projectId, {
-        value: amount,
-      });
-
-      await tx.wait();
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/projects/${project._id}/fund`,
-        {
-          transactionHash: tx.hash,
-        }
-      );
-
-      setPaymentStatus("funded");
-    } catch (error) {
-      console.error("Error funding project:", error);
-      alert("Error funding project");
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
-  const handleReleasePayment = async () => {
-    if (!account) {
-      await connectWallet();
-      return;
-    }
-
-    try {
-      setPaymentLoading(true);
-      const projectId = ethers.utils.id(project._id.toString());
-
-      const tx = await contract.releasePayment(projectId);
-      await tx.wait();
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/projects/${project._id}/complete`,
-        {
-          transactionHash: tx.hash,
-        }
-      );
-
-      setPaymentStatus("completed");
-    } catch (error) {
-      console.error("Error releasing payment:", error);
-      alert("Error releasing payment");
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
 
   const handleDeliverableSubmit = async (e) => {
     e.preventDefault();
@@ -175,6 +115,58 @@ const ProjectDetails = () => {
     navigate(`/inbox`);
   };
 
+  const handleMarkAsComplete = async () => {
+    try {
+      const newStatus = isClient
+        ? "marked_as_completed_by_employer"
+        : "marked_as_completed_by_freelancer";
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/projects/project/${projectId}/status`,
+        { status: newStatus }
+      );
+
+      setProject((prev) => ({
+        ...prev,
+        status: response.data.status,
+      }));
+      console.log("Project status updated to:", response.data.status);
+    } catch (error) {
+      console.error("Error marking project as complete:", error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      try {
+        handleMarkAsComplete();
+        console.log("Project status updated to:", project.status);
+      } catch (error) {
+        console.error("Error marking project as complete:", error);
+      }
+      const reviewData = {
+        rating,
+        comment: review,
+        reviewerType: isClient ? "employer" : "freelancer",
+      };
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/projects/project/${projectId}/review`,
+        reviewData
+      );
+
+      setProject((prev) => ({
+        ...prev,
+        status: "completed",
+        ...(isClient ? { clientReview: response.data.review } : {}),
+      }));
+
+      setShowReviewDialog(false);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+    }
+  };
+
   if (!project) {
     return <div className={styles.error}>Project not found</div>;
   }
@@ -184,37 +176,18 @@ const ProjectDetails = () => {
       <div className={styles.header}>
         <div className={styles.mainInfo}>
           <h1>{project.serviceId.title}</h1>
-          <span className={`${styles.status} ${styles[project.status]}`}>
-            {project.status.replace("_", " ")}
-          </span>
+          {project.status === "marked_as_completed_by_employer" ||
+          project.status === "marked_as_completed_by_freelancer" ? (
+            <span className={`${styles.status} ${styles.pendingApproval}`}>
+              Pending Approval
+            </span>
+          ) : (
+            <span className={`${styles.status} ${styles[project.status]}`}>
+              {project.status.replace("_", " ")}
+            </span>
+          )}
         </div>
 
-        {isClient && (
-          <>
-            <div className={styles.paymentActions}>
-              {project.status === "pending" && (
-                <button
-                  // onClick={handleFundProject}
-                  disabled={paymentLoading}
-                  className={styles.fundButton}
-                >
-                  <MetaMaskComponent />
-                  {/* {paymentLoading ? "Processing..." : "Fund Project"} */}
-                </button>
-              )}
-
-              {project.status === "in_progress" && (
-                <button
-                  onClick={handleReleasePayment}
-                  disabled={paymentLoading}
-                  className={styles.releaseButton}
-                >
-                  {paymentLoading ? "Processing..." : "Release Payment"}
-                </button>
-              )}
-            </div>
-          </>
-        )}
         <div className={styles.metadata}>
           <div className={styles.metaItem}>
             <span className={styles.label}>Created:</span>
@@ -225,6 +198,44 @@ const ProjectDetails = () => {
             <span>{format(new Date(project.updatedAt), "MMM dd, yyyy")}</span>
           </div>
         </div>
+      </div>
+
+      <div className={styles.completionSection}>
+        {project.status.includes("marked_as_completed") && (
+          <div className={styles.completionBanner}>
+            {project.status === "marked_as_completed_by_freelancer" ? (
+              <span>
+                {isClient ? "The Freelancer " : "You"} marked the project as{" "}
+                <span className={styles.completed}>Completed</span>
+              </span>
+            ) : (
+              <span>
+                Project marked as Completed by{" "}
+                {isClient ? "you" : "the freelancer"}
+              </span>
+            )}
+            {((isClient &&
+              project.status === "marked_as_completed_by_freelancer") ||
+              (!isClient &&
+                project.status === "marked_as_completed_by_employer")) && (
+              <button
+                className={styles.completeButton}
+                onClick={() => setShowReviewDialog(true)}
+              >
+                Complete Project
+              </button>
+            )}
+          </div>
+        )}
+
+        {project.status === "in_progress" && (
+          <button
+            className={styles.markCompleteButton}
+            onClick={handleMarkAsComplete}
+          >
+            Mark as Complete
+          </button>
+        )}
       </div>
 
       <div className={styles.content}>
@@ -342,7 +353,7 @@ const ProjectDetails = () => {
             </div>
           </section>
 
-          {project.clientReview && (
+          {project.employerRating && (
             <section className={styles.section}>
               <h2>Client Review</h2>
               <div className={styles.review}>
@@ -351,7 +362,7 @@ const ProjectDetails = () => {
                     <span
                       key={index}
                       className={
-                        index < project.clientReview.rating
+                        index < project.employerRating
                           ? styles.starFilled
                           : styles.star
                       }
@@ -360,10 +371,33 @@ const ProjectDetails = () => {
                     </span>
                   ))}
                   <span className={styles.ratingValue}>
-                    {project.clientReview.rating.toFixed(1)}
+                    {project?.employerRating?.toFixed(1)}
                   </span>
                 </div>
-                <p className={styles.comment}>{project.clientReview.comment}</p>
+                <p className={styles.comment}>{project?.employerComment}</p>
+              </div>
+            </section>
+          )}
+
+          {project.freelancerRating && (
+            <section className={styles.section}>
+              <h2>Freelancer Review</h2>
+              <div className={styles.review}>
+                <div className={styles.rating}>
+                  {[...Array(5)].map((_, index) => (
+                    <span
+                      key={index}
+                      className={
+                        index < project.freelancerRating
+                          ? styles.starFilled
+                          : styles.star
+                      }
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <p className={styles.comment}>{project?.freelancerComment}</p>
               </div>
             </section>
           )}
@@ -420,6 +454,46 @@ const ProjectDetails = () => {
           </aside>
         )}
       </div>
+
+      {showReviewDialog && (
+        <div className={styles.reviewDialog}>
+          <div className={styles.reviewDialogContent}>
+            <h2>Rate & Review</h2>
+            <div className={styles.ratingSection}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  className={`${styles.star} ${rating >= star ? styles.starFilled : ""}`}
+                  onClick={() => setRating(star)}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="Write your review..."
+              className={styles.reviewInput}
+            />
+            <div className={styles.dialogActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => setShowReviewDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.submitButton}
+                onClick={handleSubmitReview}
+                disabled={!rating || !review}
+              >
+                Submit Review
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

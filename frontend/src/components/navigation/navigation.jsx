@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import DropdownMenu from "../dropdownMenu/dropdownMenu";
 import { ChatContext } from "../../contexts/ChatContext";
+import PaymentComponent from "../metaMaskpayment/paymentComponent";
 
 export default function Navigation() {
   const { unReadCount } = useContext(ChatContext);
@@ -181,6 +182,10 @@ export default function Navigation() {
                       </button>
                     )}
 
+                    <div className={styles.payment_component}>
+                      <PaymentComponent />
+                    </div>
+
                     <button
                       className={styles.avatar_menu_item}
                       onClick={logout}
@@ -272,6 +277,10 @@ export default function Navigation() {
                         Freelancer
                       </button>
                     )}
+
+                    <div className={styles.payment_component}>
+                      <PaymentComponent />
+                    </div>
 
                     <button
                       className={styles.avatar_menu_item}

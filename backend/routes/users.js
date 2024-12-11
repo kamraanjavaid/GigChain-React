@@ -112,6 +112,26 @@ router.put("/user/:userId/update", async (req, res) => {
   }
 });
 
+router.put("/user/:userId/update-wallet-address", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { walletAddress } = req.body;
+    const user = await User.findById(userId);
+    user.walletAddress = walletAddress;
+    await user.save();
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+router.get("/user/:userId/wallet-address", async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  res.json({ walletAddress: user.walletAddress });
+});
+
 router.post("/register", async (req, res) => {
   const defaultAvatar =
     "https://servicesthumbnailbucket.s3.ap-south-1.amazonaws.com/profile_avatar.jpg";

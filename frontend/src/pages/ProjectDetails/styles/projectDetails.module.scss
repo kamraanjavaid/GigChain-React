@@ -5,6 +5,7 @@
   margin: 0 auto;
   padding: 2rem;
   background-color: base.$background;
+  min-height: 100vh;
 }
 
 .loading {
@@ -265,6 +266,9 @@
   background: white;
   border-radius: 4px;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .messageButton {
@@ -399,4 +403,137 @@
       background-color: base.$primary-dark;
     }
   }
+}
+
+.completionSection {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: base.$white;
+  border-radius: 8px;
+}
+
+.completionBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: base.$background;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.markCompleteButton,
+.completeButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.markCompleteButton {
+  background: base.$primary;
+  color: white;
+  border: none;
+}
+
+.completeButton {
+  background: base.$primary;
+  color: white;
+  border: none;
+}
+
+.reviewDialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.reviewDialogContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+
+  h2 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.ratingSection {
+  margin-bottom: 1.5rem;
+
+  .star {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #ddd;
+
+    &.starFilled {
+      color: base.$primary;
+    }
+  }
+}
+
+.reviewInput {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .cancelButton {
+    background: #f5f5f5;
+    color: #333;
+    // border: 1px solid #ddd;
+  }
+
+  .submitButton {
+    background: base.$primary;
+    color: white;
+    border: none;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.completed {
+  color: #155724;
+}
+
+.completionBanner {
+  border: 1px solid #155724;
+  background: #d4edda;
+}
+
+.pendingApproval {
+  border: 1px solid #856404;
+  background: #fff3cd;
 }

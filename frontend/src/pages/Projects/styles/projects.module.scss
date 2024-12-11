@@ -4,6 +4,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
   background-color: base.$background;
   // width: 100%;
 }
@@ -47,7 +48,7 @@
 
 .projectsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
@@ -149,4 +150,15 @@
   .tabs {
     flex-direction: column;
   }
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  height: 100%;
+  font-size: 1rem;
+  color: #666;
 }

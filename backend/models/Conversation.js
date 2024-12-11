@@ -23,7 +23,7 @@ const conversationSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["proposal", "accepted", "rejected"],
+    enum: ["proposal", "accepted", "completed", "rejected"],
     default: "proposal",
   },
 

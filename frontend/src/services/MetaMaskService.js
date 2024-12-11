@@ -13,7 +13,14 @@ export const connectWallet = async () => {
       method: "eth_requestAccounts",
     });
 
-    return accounts[0];
+    try {
+      const web3 = new Web3(provider);
+      const accounts = await web3.eth.getAccounts();
+      const walletAddress = accounts[0];
+      return walletAddress;
+    } catch (error) {
+      throw error;
+    }
   } catch (error) {
     throw error;
   }

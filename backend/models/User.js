@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema(
     userType: {
       type: String,
       enum: ["freelancer", "employer"],
-    required: false,
+      required: false,
       default: "employer",
     },
     googleId: { type: String, required: false },
@@ -21,6 +21,7 @@ const UserSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     verificationCode: String,
     verificationCodeExpires: Date,
+    walletAddress: { type: String, required: false },
     location: {
       timezone: String,
     },

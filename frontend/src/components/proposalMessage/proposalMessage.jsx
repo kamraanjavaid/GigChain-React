@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useWeb3 } from "../../contexts/Web3Context";
 import { useNavigate } from "react-router-dom";
 import styles from "./styles/proposalMessage.module.scss";
 import { useAuth } from "../../contexts/AuthContext";
@@ -15,13 +14,22 @@ const ProposalMessage = ({
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const currentUserId = currentUser._id || currentUser?.id;
+  const [senderDetails, setSenderDetails] = useState(null);
 
-  const { connectWallet, account } = useWeb3();
-
-  console.log("connectWallet:", connectWallet);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const { sender } = message;
+
+  useEffect(() => {
+    const fetchSenderDetails = async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/users/user/${sender}/wallet-address`
+      );
+      setSenderDetails(response.data);
+      console.log("Sender details", response.data);
+    };
+    fetchSenderDetails();
+  }, [sender]);
 
   console.log("Message", message);
 
@@ -77,69 +85,29 @@ const ProposalMessage = ({
     try {
       setIsProcessing(true);
 
-      console.log("account", account);
-
-      // if (!account) {
-      //   try {
-      //     await connectWallet();
-      //   } catch (error) {
-      //     alert("Please connect your MetaMask wallet to continue");
-      //     return;
-      //   }
-      // }
-
       const projectData = {
         serviceId: conversationDetails.serviceId._id,
         employerId: sender,
         freelancerId: currentUser._id,
         conversationId: message.conversationId,
-        status: "pending",
+        status: "in_progress",
         budget: message.proposal.budget,
         deadline: message.proposal.deadline,
         proposalId: message.proposal._id,
-        walletAddress: account,
       };
 
-      console.log("project data", projectData);
-
-      const token = localStorage.getItem("token");
-
-      console.log("token", token);
-
-      setIsLoading(true);
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/projects/accept-proposal`,
-        projectData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        projectData
       );
 
       if (response.status === 200) {
         navigate("/projects");
-        // try {
-        //   console.log("response.data", response.data.project);
-        //   const contractResponse = await axios.post(
-        //     `${import.meta.env.VITE_API_URL}/api/projects/${response.data.project._id}/deploy-contract`,
-        //     {},
-        //     {
-        //       headers: { Authorization: `Bearer ${token}` },
-        //     }
-        //   );
-        //   if (contractResponse.data.success) {
-        //     navigate("/projects");
-        //   }
-        // } catch (error) {
-        //   console.error("Error deploying contract:", error);
-        //   alert("Error creating smart contract. Please try again.");
-        // }
       }
     } catch (error) {
       console.error("Error accepting proposal:", error);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -178,7 +146,9 @@ const ProposalMessage = ({
           </div>
         </div>
 
-        {!isCurrentUser && projectStatus !== "accepted" ? (
+        {!isCurrentUser &&
+        projectStatus !== "accepted" &&
+        projectStatus !== "completed" ? (
           <div className={styles.buttonsContainer}>
             <button
               className={`${styles.button} ${styles.counterOffer}`}

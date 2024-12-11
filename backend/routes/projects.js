@@ -73,6 +73,21 @@ router.post(
   }
 );
 
+// router.post("/project/:projectId/update-contract", async (req, res) => {
+//   try {
+//     const { projectId } = req.params;
+//     const { contractAddress, transactionHash } = req.body;
+//     const project = await Project.findById(projectId);
+//     project.contractAddress = contractAddress;
+//     project.transactionHash.contractDeployment = transactionHash;
+//     await project.save();
+//     res.status(200).json({ project });
+//   } catch (error) {
+//     console.error("Error updating contract:", error);
+//     res.status(500).json({ message: "Error updating contract" });
+//   }
+// });
+
 router.post("/:projectId/deploy-contract", async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
@@ -118,7 +133,7 @@ router.post("/:projectId/deploy-contract", async (req, res) => {
   }
 });
 
-router.post("/accept-proposal", authMiddleware, async (req, res) => {
+router.post("/accept-proposal", async (req, res) => {
   const {
     proposalId,
     employerId,
@@ -128,8 +143,9 @@ router.post("/accept-proposal", authMiddleware, async (req, res) => {
     budget,
     deadline,
     status,
-    walletAddress,
   } = req.body;
+
+  console.log("req.body in accept-proposal", req.body);
 
   try {
     const project = await Project.create({
@@ -141,7 +157,6 @@ router.post("/accept-proposal", authMiddleware, async (req, res) => {
       status,
       budget,
       deadline,
-      walletAddress,
     });
 
     console.log("project created", project);
@@ -173,6 +188,163 @@ router.post("/accept-proposal", authMiddleware, async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+router.patch("/project/:projectId/status", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { status } = req.body;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // const validTransitions = {
+    //   in_progress: [
+    //     "marked_as_completed_by_employer",
+    //     "marked_as_completed_by_freelancer",
+    //   ],
+    //   marked_as_completed_by_employer: ["completed"],
+    //   marked_as_completed_by_freelancer: ["completed"],
+    // };
+
+    // if (!validTransitions[project.status]?.includes(status)) {
+    //   return res.status(400).json({ message: "Invalid status transition" });
+    // }
+
+    if (
+      project.status === "in_progress" &&
+      status === "marked_as_completed_by_employer"
+    ) {
+      project.status = status;
+      console.log("project status updated to", project.status);
+    } else if (
+      project.status === "in_progress" &&
+      status === "marked_as_completed_by_freelancer"
+    ) {
+      project.status = status;
+      console.log("project status updated to", project.status);
+    } else if (
+      project.status === "marked_as_completed_by_employer" &&
+      status === "marked_as_completed_by_freelancer"
+    ) {
+      project.status = "completed";
+      console.log("project status updated to", project.status);
+    } else if (
+      project.status === "marked_as_completed_by_freelancer" &&
+      status === "marked_as_completed_by_employer"
+    ) {
+      project.status = "completed";
+      console.log("project status updated to", project.status);
+    }
+
+    if (status === "completed") {
+      project.completedAt = new Date();
+    }
+
+    await project.save();
+
+    const conversation = await Conversation.findByIdAndUpdate(
+      project.conversationId,
+      {
+        status: "completed",
+      }
+    );
+
+    if (project.status === "completed" && conversation.status === "completed") {
+      res.json({ status: project.status });
+    }
+  } catch (error) {
+    console.error("Error updating project status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/project/:projectId/review", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { rating, comment, reviewerType } = req.body;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // const isEmployer =
+    //   project.employerId.toString() === req.user._id.toString();
+    // const isFreelancer =
+    //   project.freelancerId.toString() === req.user._id.toString();
+
+    // if (!isEmployer && !isFreelancer) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Not authorized to review this project" });
+    // }
+
+    if (rating < 1 || rating > 5) {
+      return res
+        .status(400)
+        .json({ message: "Rating must be between 1 and 5" });
+    }
+
+    const review = {
+      rating,
+      comment,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    if (reviewerType === "employer") {
+      project.employerRating = review.rating;
+      project.employerComment = review.comment;
+    } else if (reviewerType === "freelancer") {
+      project.freelancerRating = review.rating;
+      project.freelancerComment = review.comment;
+    } else {
+      return res.status(400).json({ message: "Invalid reviewer type" });
+    }
+
+    if (project.employerRating && project.freelancerRating) {
+      project.status = "completed";
+      project.completedAt = new Date();
+    }
+
+    await project.save();
+
+    const service = await Service.findById(project.serviceId);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    if (reviewerType === "employer") {
+      service.reviews.push({
+        rating: review.rating,
+        comment: review.comment,
+        reviewer: project.employerId,
+        createdAt: new Date(),
+      });
+      service.numReviews++;
+    }
+    await service.save();
+
+    if (reviewerType === "employer") {
+      res.json({
+        review: project.employerRating,
+        status: project.status,
+      });
+    } else if (reviewerType === "freelancer") {
+      res.json({
+        review: project.freelancerRating,
+        status: project.status,
+      });
+    }
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

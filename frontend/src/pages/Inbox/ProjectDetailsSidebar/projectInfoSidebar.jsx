@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import styles from "./styles/projectInfoSidebar.module.scss";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -84,37 +85,32 @@ const ProjectInfoSidebar = ({ currentUser, conversationId }) => {
   return (
     <div className={styles.projectInfoSidebar}>
       <h2>{projectInfo?.serviceId?.title}</h2>
-
       <div className={styles.status}>
-        <span className={styles.statusLabel}>Status:</span>{" "}
-        {projectInfo?.status}
+        <span className={`${styles.status} ${styles[projectInfo?.status]}`}>
+          <span className={styles.statusLabel}>Status:</span>{" "}
+          {projectInfo?.status.replace("_", " ")}
+        </span>
       </div>
-
-      <div className={styles.employerInfo}>
-        <img
-          className={styles.employerProfilePicture}
-          src={employer.profilePictureUrl}
-        />
-        <h3 className={styles.employerName}>
-          {employer.firstName} {employer.lastName}
-        </h3>
-      </div>
-
-      {projectInfo?.status === "proposal" && (
-        <div className={styles.actionButtons}>
-          <button className={styles.buttonPrimary}>Accept Project</button>
-          <button className={styles.buttonSecondary}>Reject Project</button>
+      <Link to={`/freelancer-profile/${employer._id}`}>
+        <div className={styles.employerInfo}>
+          <img
+            className={styles.employerProfilePicture}
+            src={employer.profilePictureUrl}
+          />
+          <h3 className={styles.employerName}>
+            {employer.firstName} {employer.lastName}
+          </h3>
         </div>
-      )}
-
-      {projectInfo?.status === "accepted" && (
+      </Link>
+      {projectInfo?.status === "accepted" ||
+      projectInfo?.status === "completed" ? (
         <button
           onClick={() => navigate(`/projects/${projectInfo.projectId}`)}
           className={styles.buttonPrimary}
         >
           Open Project
         </button>
-      )}
+      ) : null}
     </div>
   );
 };

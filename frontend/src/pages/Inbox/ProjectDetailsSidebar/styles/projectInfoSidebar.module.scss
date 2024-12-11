@@ -1,10 +1,23 @@
 @use "../../../../styles/base" as base;
 
+.employerInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
 .projectInfoSidebar {
   width: 100%;
   padding: 20px;
   background-color: #fff;
   border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
   //   border-left: 1px solid #e0e0e0;
 
   h2 {
@@ -139,4 +152,35 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.proposal {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  &.completed {
+    background-color: #cce5ff;
+    color: base.$primary;
+  }
+  &.accepted {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  &.cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.statusLabel {
+  font-weight: 500;
+  color: #333;
+  opacity: 0.7;
 }

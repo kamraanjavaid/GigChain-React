@@ -100,13 +100,13 @@ const ViewServiceDetails = () => {
   const handleSendProposal = async () => {
     try {
       let conversationId;
-      const conversationExists = await checkConversationExists(
+      const conversationExistsOnService = await checkConversationExists(
         serviceDetails.user,
         currentUserId
       );
 
-      if (conversationExists) {
-        conversationId = conversationExists;
+      if (conversationExistsOnService) {
+        conversationId = conversationExistsOnService;
 
         localStorage.setItem("activeConversation", conversationId);
         navigate("/inbox");

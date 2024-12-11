@@ -331,10 +331,13 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  function checkConversationExists(userId, currentUserId) {
+  function checkConversationExists(userId, currentUserId, serviceId) {
     const conversation = conversations.find((conversation) =>
-      [userId, currentUserId].every((id) =>
-        conversation.participants.some((participant) => participant._id === id)
+      [userId, currentUserId].every(
+        (id) =>
+          conversation.participants.some(
+            (participant) => participant._id === id
+          ) && conversation.serviceId === serviceId
       )
     );
     return conversation ? conversation._id : null;

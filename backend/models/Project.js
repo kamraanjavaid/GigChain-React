@@ -20,13 +20,29 @@ const deliverableSchema = new mongoose.Schema({
 });
 
 const reviewSchema = new mongoose.Schema({
-  rating: {
+  employerRating: {
     type: Number,
     min: 1,
     max: 5,
   },
-  comment: {
+  employerComment: {
     type: String,
+  },
+  freelancerRating: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
+  freelancerComment: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
@@ -61,7 +77,13 @@ const projectSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "in_progress", "completed", "cancelled"],
+    enum: [
+      "in_progress",
+      "marked_as_completed_by_freelancer",
+      "marked_as_completed_by_employer",
+      "completed",
+      "cancelled",
+    ],
     default: "pending",
   },
 
@@ -88,91 +110,29 @@ const projectSchema = new mongoose.Schema({
     type: Date,
   },
 
-  clientReview: reviewSchema,
+  employerRating: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
+  employerComment: {
+    type: String,
+  },
+  freelancerRating: {
+    type: Number,
+    min: 1,
+    max: 5,
+  },
+  freelancerComment: {
+    type: String,
+  },
   deliverables: [deliverableSchema],
-
-  contractAddress: {
-    type: String,
-    unique: true,
-    sparse: true,
-  },
-
-  contractStatus: {
-    type: String,
-    enum: ["not_created", "created", "funded", "completed", "disputed"],
-    default: "not_created",
-  },
-
-  paymentStatus: {
-    type: String,
-    enum: ["pending", "escrow_funded", "released", "refunded"],
-    default: "pending",
-  },
-
-  transactionHash: {
-    contractCreation: String,
-    escrowFunding: String,
-    paymentRelease: String,
-  },
-  blockchainLogs: [
-    {
-      event: {
-        type: String,
-        enum: [
-          "contract_created",
-          "contract_funded",
-          "contract_completed",
-          "contract_disputed",
-        ],
-      },
-      timestamp: Date,
-      transactionHash: String,
-      initiatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    },
-  ],
 });
 
 projectSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
-
-projectSchema.methods.updateContractStatus = async function (status, txHash) {
-  this.contractStatus = status;
-  if (txHash) {
-    this.blockchainLogs.push({
-      event: `contract_${status}`,
-      timestamp: new Date(),
-      transactionHash: txHash,
-    });
-  }
-  return this.save();
-};
-
-projectSchema.methods.updatePaymentStatus = async function (status, txHash) {
-  this.paymentStatus = status;
-  if (txHash) {
-    this.transactionHash[status] = txHash;
-  }
-  return this.save();
-};
-
-projectSchema.methods.addBlockchainLog = async function (
-  event,
-  txHash,
-  userId
-) {
-  this.blockchainLogs.push({
-    event,
-    timestamp: new Date(),
-    transactionHash: txHash,
-    initiatedBy: userId,
-  });
-  return this.save();
-};
 
 const Project = mongoose.model("Project", projectSchema);
 
