@@ -32,7 +32,7 @@ require("./config/passport");
 
 const server = http.createServer(app);
 const io = socketIO(server, {
-  cors: { origin: process.env.FRONTEND_URL },
+  cors: { origin: "*" },
   debug: true,
 });
 
