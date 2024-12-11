@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ChatContext } from "../../contexts/ChatContext";
 import { useWeb3 } from "../../contexts/Web3Context";
 import { ethers } from "ethers";
+import MetaMaskComponent from "../../components/metaMaskpayment/paymentComponent";
 
 const ProjectDetails = () => {
   const { setActiveConversation } = useContext(ChatContext);
@@ -193,11 +194,12 @@ const ProjectDetails = () => {
             <div className={styles.paymentActions}>
               {project.status === "pending" && (
                 <button
-                  onClick={handleFundProject}
+                  // onClick={handleFundProject}
                   disabled={paymentLoading}
                   className={styles.fundButton}
                 >
-                  {paymentLoading ? "Processing..." : "Fund Project"}
+                  <MetaMaskComponent />
+                  {/* {paymentLoading ? "Processing..." : "Fund Project"} */}
                 </button>
               )}
 

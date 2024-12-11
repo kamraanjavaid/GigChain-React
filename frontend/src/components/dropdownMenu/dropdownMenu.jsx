@@ -145,7 +145,7 @@ const DropdownMenu = () => {
   return (
     <div ref={dropdownRef} className={styles.dropdown}>
       <button className={styles.dropdownToggle} onClick={toggleDropdown}>
-        Category
+        Explore
       </button>
       {isOpen && (
         <ul className={styles.menu}>

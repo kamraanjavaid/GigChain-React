@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema(
     userType: {
       type: String,
       enum: ["freelancer", "employer"],
-      required: false,
+    required: false,
       default: "employer",
     },
     googleId: { type: String, required: false },
@@ -24,28 +24,6 @@ const UserSchema = new mongoose.Schema(
     location: {
       timezone: String,
     },
-
-    walletAddress: {
-      type: String,
-      unique: true,
-      sparse: true,
-      required: false,
-    },
-
-    transactions: [
-      {
-        hash: String,
-        type: {
-          type: String,
-          enum: ["project_creation", "project_completion"],
-        },
-        projectId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Project",
-        },
-        timestamp: Date,
-      },
-    ],
   },
   {
     timestamps: true,
